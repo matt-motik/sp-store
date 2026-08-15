@@ -1,5 +1,9 @@
+"""Конфигурация приложения catalog."""
+
 from django.apps import AppConfig
 
 
 class CatalogConfig(AppConfig):
-    name = 'catalog'
+    """Конфигурация приложения каталога."""
+
+    name = "catalog"
