@@ -1,9 +1,10 @@
-# SkyPro Модуль Django Магазин. Учебный проект: Bootstrap + http.server
+# SkyPro Модуль Django. Учебный проект: Интернет-магазин на Django + Bootstrap
 
-[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.14+-blue.svg)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-6.1+-green.svg)](https://www.djangoproject.com/)
+[![Ruff](https://img.shields.io/badge/Ruff-0.16+-purple.svg)](https://docs.astral.sh/ruff/)
 
-
-Учебный проект, реализующий простой интернет магазин на Django.
+Учебный проект интернет-магазина на Django с Bootstrap-вёрсткой.
 
 
 ## 🚀 Возможности программы
@@ -17,9 +18,9 @@
 - [Установка](#установка)
 - [Конфигурация](#конфигурация)
 - [Использование](#использование)
-- [Структура таблиц БД](#структура-таблиц-бд)
-- [Методы DBManager](#методы-dbmanager)
 - [Разработка](#разработка)
+  - [Структура проекта](#структура-проекта)
+  - [Линтеры и форматирование](#линтеры) 
 - [Тестирование](#тестирование)
 - [To do](#to-do)
 - [Команда проекта](#команда-проекта)
@@ -43,13 +44,25 @@
 git clone https://github.com/matt-motik/sp-store.git
 cd sp-store
 uv sync --with dev,lint
-uv shell
+uv run python manage.py migrate
+uv run python manage.py runserver
 ```
 
 <div id="конфигурация"></div>
 
 ## ⚙️ Конфигурация
+### Переменные окружения
 
+Скопируй `.env.example` в `.env` и настройте:
+
+```bash
+cp .env.example .env
+```
+| Переменная   | Описание | По умолчанию        |
+|-------------|------------|---------------------|
+| **SECRET_KEY**  | Секретный ключ Django | - |
+| **DEBUG** | Режим отладки| True | 
+| **ALLOWED_HOSTS**  | Разрешённые хосты | localhost,127.0.0.1 |
 
 <div id="использование"></div>
 
@@ -58,27 +71,58 @@ uv shell
 ### Запуск программы
 
 ```bash
-poetry run python main.py
+uv run python manage.py runserver
 ```
 Открыть в браузере
 http://127.0.0.1:8000/
-```
-HTTP-запрос
-    │
-    ▼
-┌─────────────────────────────────────────┐
-│ Handler.do_GET() / do_POST()            │
-├─────────────────────────────────────────┤
-│ 1. Нормализация пути (posixpath.normpath)│
-│ 2. Редирект (если путь изменился)       │
-│ 3. Статика (/static/*)                  │
-│ 4. Страницы ошибок (/404, /500)         │
-│ 5. Основная логика (read_page)          │
-└─────────────────────────────────────────┘
-```
+
 <div id="разработка"></div>
 
 ## Разработка
+<div id="структура-проекта"></div>
+
+### Структура проекта
+```
+sp-store/
+├── config/              # конфигурация Django
+├── catalog/             # приложение каталога
+│   ├── templates/       # шаблоны home.html, contacts.html
+│   └── views.py         # контроллеры
+├── static/              # Bootstrap, иконки, JS
+├── templates/           # глобальные шаблоны (если есть)
+├── manage.py
+├── pyproject.toml       # uv + ruff + mypy
+└── README.md
+```
+<div id="линтеры"></div>
+
+### 🔍 Линтеры и форматирование
+
+Проект использует `ruff` для линтинга и форматирования, `mypy` для проверки типов.
+
+### Проверка кода
+
+```bash
+# Линтинг
+uv run ruff check catalog/ config/
+
+# Автоисправление ошибок
+uv run ruff check --fix catalog/ config/
+
+# Форматирование
+uv run ruff format catalog/ config/
+
+# Проверка типов
+uv run mypy catalog/ config/
+```
+### Pre-commit hooks
+```bash
+# Установить hooks (выполняется автоматически перед каждым коммитом)
+uv run pre-commit install
+
+# Проверить все файлы вручную
+uv run pre-commit run --all-files
+```
 
 <!-- СЕКЦИЯ_AUTO_API: СТАРТ -->
 <details>
@@ -88,20 +132,13 @@ HTTP-запрос
 
 | Модуль | Функция/Класс | Краткое описание |
 |--------|---------------|------------------|
-| [**`main.py`**](docs/api/main.md) | | |
-| | [🔧 main](docs/api/main.md#main) | Основная функция запуска. |
-| [**`path.py`**](docs/api/path.md) | | |
-| | [🔧 get_log_path](docs/api/path.md#get_log_path) | Функция для получения пути к папке с логами. |
-| | [🔧 get_root_dir](docs/api/path.md#get_root_dir) | Функция для получения пути к корневой папке проекта. |
-| | [🔧 get_data_dir](docs/api/path.md#get_data_dir) | Функция для получения пути к папке с данными. |
-| [**`server.py`**](docs/api/server.md) | | |
-| | [🔧 path_guard](docs/api/server.md#path_guard) | Декоратор для защиты путей к страницам. |
-| | [🔧 read_page](docs/api/server.md#read_page) | Читает HTML-файл из директории pages. |
-| | [📦 Handler](docs/api/server.md#Handler) | Обработчик HTTP-запросов для простого веб-сервера. |
-| | [⚙️ Handler.do_GET](docs/api/server.md#Handler.do_GET) | Обрабатывает входящие GET-запросы. |
-| | [⚙️ Handler.do_POST](docs/api/server.md#Handler.do_POST) | Обрабатывает входящие POST-запросы. |
-| | [🔧 do_GET](docs/api/server.md#do_GET) | Обрабатывает входящие GET-запросы. |
-| | [🔧 do_POST](docs/api/server.md#do_POST) | Обрабатывает входящие POST-запросы. |
+| [**`apps.py`**](docs/api/apps.md) | | |
+| | [📦 CatalogConfig](docs/api/apps.md#CatalogConfig) | Конфигурация приложения каталога. |
+| [**`manage.py`**](docs/api/manage.md) | | |
+| | [🔧 main](docs/api/manage.md#main) | Run administrative tasks. |
+| [**`views.py`**](docs/api/views.md) | | |
+| | [🔧 home](docs/api/views.md#home) | Отображает главную страницу магазина. |
+| | [🔧 contacts](docs/api/views.md#contacts) | Отображает страницу контактов и обрабатывает форму обратной связи. |
 
 > 📘 **Полная документация** с примерами и описанием параметров доступна в папке [`docs/api`](docs/api).
 </details>
@@ -110,30 +147,17 @@ HTTP-запрос
 <div id="тестирование"></div>
 
 ## 🧪 Тестирование
-
-> `main.py` не тестируется
-
+Тесты находятся в папке `tests/` (если есть) или будут добавлены позже.
 <!-- СЕКЦИЯ_AUTO_TEST: СТАРТ -->
 <details>
 <summary>📊 Результаты тестов и покрытие (развёрнуть)</summary>
 ### 📊 Результаты тестов SRC
 
 ```
-📈 Покрытие кода:
-src/__init__.py       0      0   100%
-src/path.py          10     10     0%   3-22
-src/server.py        99     99     0%   2-264
-TOTAL               109    109     0%
-Coverage HTML written to dir htmlcov/src
-/home/matt/.cache/pypoetry/virtualenvs/sp-django-dGoNMyjz-py3.14/lib/python3.14/site-packages/coverage/control.py:963: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.15.4/messages.html#warning-no-data-collected
-
 🎯 Результаты тестов src:
 ============================= test session starts ==============================
 =============================== warnings summary ===============================
-================================ tests coverage ================================
------------------------------------------------
------------------------------------------------
-============================== 1 warning in 0.04s ==============================
+============================== 1 warning in 0.01s ==============================
 ```
 
 > 📊 **HTML отчёт покрытия**: [`htmlcov/index.html`](htmlcov/src/index.html)
@@ -146,43 +170,14 @@ Coverage HTML written to dir htmlcov/src
 
 ## To do
 
-- [x] Структура проекта, `pyproject.toml`, `README.md`, `.gitignore`, Poetry, линтеры
-- [x] Виртуальное окружение, установка зависимостей через Poetry
+- [x] Структура проекта, `pyproject.toml`, `README.md`, `.gitignore`, uv, линтеры
+- [x] Виртуальное окружение, установка зависимостей через uv
 - [x] `readme_gen.py` — скрипт генерации README и покрытия тестами
-- [x] `lint.ps1` — скрипт линтеров, форматеров, типизаторов и др
-- [x] [main.py](main.py) — Точка входа в приложение
-- [x] server.py — основной модуль веб-сервера на BaseHTTPRequestHandler
-- [x] [path.py](src/path.py) — Модуль реализующий работу с путями
-- [x]  Реализована обработка GET-запросов:
-- [x] Отдача HTML-страниц из pages/
-- [x] Раздача статических файлов из static/
-- [x] Нормализация URL-путей через posixpath.normpath
-- [x] Защита от directory traversal (..)
-- [x] Защита от URL-кодирования (%2E%2E)
-- [x] Редирект (301) при изменении пути
-- [x] Страницы ошибок 404 и 500
-- [x] Реализована обработка POST-запросов:
-- [x] Чтение тела запроса
-- [x] Парсинг данных формы (application/x-www-form-urlencoded)
-- [x] Вывод данных в консоль для отладки
-- [x] Возврат страницы contacts.html после отправки
-- [x] Сверстаны 4 страницы по прототипам:
-- [x] index.html — Главная
-- [x] category.html — Категории
-- [x] catalog.html — Каталог/Заказы
-- [x] contacts.html — Контакты (с формой обратной связи)
-- [x] Страницы ошибок:
-- [x] 404.html
-- [x] 500.html
-- [x] Подключен Bootstrap 5 (локально через /static/)
-- [x] Подключены Bootstrap Icons
-- [x] Создан navigation.js — скрипт подсветки активного пункта меню
-- [x] Декоратор path_guard для защиты путей к страницам
-- [x] Защита от directory traversal (..)
-- [x] Защита от URL-кодирования (unquote)
-- [x] Нормализация пути через posixpath.normpath
-- [x] Проверка, что файл статики находится внутри STATIC_DIR
-- [x] Проверить линтеры (`flake8`, `mypy`, `pydocstyle`, `black`, `isort`)
+- [x] Инициализация Django-проекта
+- [x] Приложение catalog с URL-роутингом
+- [x] Шаблоны home и contacts с Bootstrap
+- [x] Форма обратной связи с POST-обработкой
+- [x] Проверить линтеры (`ruff`, `mypy`)
 - [x] Финальная вычитка документации и обновление README
 - [x] Обновить документацию
 
