@@ -6,7 +6,3 @@ dependencies = [
     "django>=6.1",
 ]
 
-[tool.uv.workspace]
-members = [
-    "skystore",
-]
