@@ -18,11 +18,11 @@ import environ
 env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
-    DATABASE_USER=(str, None),
-    DATABASE_PASSWORD=(str, None),
-    DATABASE_NAME=(str, None),
-    DATABASE_HOST=(str, None),
-    DATABASE_PORT=(str, None),
+    DB_USER=(str, None),
+    DB_PASSWORD=(str, None),
+    DB_NAME=(str, None),
+    DB_HOST=(str, None),
+    DB_PORT=(str, None),
 )
 environ.Env.read_env(Path(__file__).resolve().parent.parent / ".env")
 
@@ -79,19 +79,22 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
-DATABASE_USER = env("DATABASE_USER")
-DATABASE_PASSWORD = env("DATABASE_PASSWORD")
-DATABASE_NAME = env("DATABASE_NAME")
-DATABASE_HOST = env("DATABASE_HOST")
-DATABASE_PORT = env("DATABASE_PORT")
 
 DATABASES = {
-    "ENGINE": "django.db.backends.postgresql_psycopg2",
-    "NAME": DATABASE_NAME,
-    "USER": DATABASE_USER,
-    "PASSWORD": DATABASE_PASSWORD,
-    "HOST": DATABASE_HOST,
-    "PORT": DATABASE_PORT,
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": env("DB_NAME"),
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASSWORD"),
+        "HOST": env("DB_HOST"),
+        "PORT": env("DB_PORT"),
+        "OPTIONS": {
+            "connect_timeout": 10,
+            "options": "-c statement_timeout=30s",
+        },
+        "CONN_MAX_AGE": 600,  # Переиспользование соединений
+        "CONN_HEALTH_CHECKS": True,  # Проверка здоровья соединений
+    }
 }
 
 
@@ -117,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ru-ru"
 
 TIME_ZONE = "Europe/Moscow"
 
