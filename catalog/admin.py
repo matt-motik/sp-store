@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from catalog.models import Category, Product
+from catalog.models import Category, Contact, Product
 
 
 # Register your models here.
@@ -23,3 +23,12 @@ class ProductAdmin(admin.ModelAdmin):
     list_display_links = ("id", "name")
     search_fields = ("name", "description")
     list_filter = ("category",)
+
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    """Настройки административной панели Контактов."""
+
+    list_display = ("id", "country", "inn", "address")
+    list_display_links = ("id", "country")
+    search_fields = ("country", "inn", "address")

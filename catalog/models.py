@@ -73,3 +73,28 @@ class Product(models.Model):
             str: Наименование товара
         """
         return self.name
+
+
+class Contact(models.Model):
+    """Модель контактных данных компании."""
+
+    country = models.CharField(max_length=100, verbose_name="Страна")
+    inn = models.CharField(max_length=20, verbose_name="ИНН")
+    address = models.CharField(max_length=200, verbose_name="Адрес")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата последнего изменения")
+
+    class Meta:
+        """Мета для админки."""
+
+        verbose_name = "Контакт"
+        verbose_name_plural = "Контакты"
+
+    def __str__(self) -> str:
+        """
+        Возвращает строковое представление контактов.
+
+        Returns:
+            str: Страна, адрес
+        """
+        return f"{self.country}, {self.address}"

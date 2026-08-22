@@ -4,6 +4,8 @@ from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
+from catalog.models import Contact, Product
+
 # Create your views here.
 
 
@@ -16,6 +18,12 @@ def home(request: HttpRequest) -> HttpResponse:
     Returns:
         Отрендеренный шаблон главной страницы.
     """
+    last_products = Product.objects.all().order_by("-created_at")[:5]
+    print("=" * 50)
+    print("Последние 5 созданных продуктов:")
+    for product in last_products:
+        print(f"  - {product.name} (цена: {product.price}, создан: {product.created_at})")
+    print("=" * 50)
     return render(request, "home.html")
 
 
@@ -29,6 +37,8 @@ def contacts(request: HttpRequest) -> HttpResponse:
         Отрендеренный шаблон страницы контактов.
         При успешной отправке формы — редирект на эту же страницу.
     """
+    contact = Contact.objects.first()
+
     if request.method == "POST":
         name = request.POST.get("name")
         phone = request.POST.get("phone")
@@ -41,4 +51,7 @@ def contacts(request: HttpRequest) -> HttpResponse:
         else:
             messages.error(request, "Пожалуйста, заполните все поля")
 
-    return render(request, "contacts.html")
+    context = {
+        "contact": contact,
+    }
+    return render(request, "contacts.html", context)
