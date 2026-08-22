@@ -18,6 +18,11 @@ import environ
 env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
+    DATABASE_USER=(str, None),
+    DATABASE_PASSWORD=(str, None),
+    DATABASE_NAME=(str, None),
+    DATABASE_HOST=(str, None),
+    DATABASE_PORT=(str, None),
 )
 environ.Env.read_env(Path(__file__).resolve().parent.parent / ".env")
 
@@ -74,12 +79,19 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
+DATABASE_USER = env("DATABASE_USER")
+DATABASE_PASSWORD = env("DATABASE_PASSWORD")
+DATABASE_NAME = env("DATABASE_NAME")
+DATABASE_HOST = env("DATABASE_HOST")
+DATABASE_PORT = env("DATABASE_PORT")
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "ENGINE": "django.db.backends.postgresql_psycopg2",
+    "NAME": DATABASE_NAME,
+    "USER": DATABASE_USER,
+    "PASSWORD": DATABASE_PASSWORD,
+    "HOST": DATABASE_HOST,
+    "PORT": DATABASE_PORT,
 }
 
 
