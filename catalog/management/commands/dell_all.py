@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     help = "Удаляем всё"
 
-    def handle(self, *args, **kwargs):
+    def handle(self, *args: tuple, **kwargs: dict) -> None:
         """Хенндл."""
         # Удаляем существующие записи
         self.stdout.write("Удаляем существующие записи...")

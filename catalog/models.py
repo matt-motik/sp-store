@@ -33,7 +33,7 @@ class Category(models.Model):
         Returns:
             str: Название категории
         """
-        return self.name
+        return str(self.name)
 
 
 class Product(models.Model):
@@ -72,7 +72,7 @@ class Product(models.Model):
         Returns:
             str: Наименование товара
         """
-        return self.name
+        return str(self.name)
 
 
 class Contact(models.Model):

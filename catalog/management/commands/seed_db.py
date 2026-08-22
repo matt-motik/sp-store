@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
     help = "Очищаем и загружаем тестовые данные в БД"
 
-    def handle(self, *args, **kwargs):
+    def handle(self, *args: tuple, **kwargs: dict) -> None:
         """Хенндл."""
         call_command("dell_all")
 
