@@ -1,0 +1,32 @@
+[
+{
+  "model": "catalog.category",
+  "pk": 3,
+  "fields": {
+    "name": "Электроника",
+    "description": "Гаджеты и устройства",
+    "created_at": "2026-08-22T19:34:38.949Z",
+    "updated_at": "2026-08-22T19:34:38.949Z"
+  }
+},
+{
+  "model": "catalog.category",
+  "pk": 4,
+  "fields": {
+    "name": "Книги",
+    "description": "Художественная литература",
+    "created_at": "2026-08-22T19:35:03.576Z",
+    "updated_at": "2026-08-22T19:35:03.576Z"
+  }
+},
+{
+  "model": "catalog.category",
+  "pk": 5,
+  "fields": {
+    "name": "Одежда",
+    "description": "Мужская и женская одежда",
+    "created_at": "2026-08-22T19:35:15.682Z",
+    "updated_at": "2026-08-22T19:35:15.682Z"
+  }
+}
+]

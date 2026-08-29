@@ -32,6 +32,7 @@
 | Компонент   | Технология |
 |-------------|------------|
 | **Django**  | `https://www.djangoproject.com/` |
+| **База данных** | PostgreSQL |
 | **Верстка** | Bootstrap 5 |
 | **Иконки**  | Bootstrap Icons |
 
@@ -58,11 +59,16 @@ uv run python manage.py runserver
 ```bash
 cp .env.example .env
 ```
-| Переменная   | Описание | По умолчанию        |
-|-------------|------------|---------------------|
-| **SECRET_KEY**  | Секретный ключ Django | - |
-| **DEBUG** | Режим отладки| True | 
-| **ALLOWED_HOSTS**  | Разрешённые хосты | localhost,127.0.0.1 |
+| Переменная       | Описание                    | По умолчанию        |
+|------------------|-----------------------------|---------------------|
+| **SECRET_KEY**   | Секретный ключ Django       | -                   |
+| **DEBUG**        | Режим отладки               | True                |
+| **ALLOWED_HOSTS**| Разрешённые хосты           | localhost,127.0.0.1 |
+| **DB_NAME**      | Имя базы данных PostgreSQL  | -                   |
+| **DB_USER**      | Пользователь PostgreSQL     | -                   |
+| **DB_PASSWORD**  | Пароль PostgreSQL           | -                   |
+| **DB_HOST**      | Хост PostgreSQL             | -                   |
+| **DB_PORT**      | Порт PostgreSQL             | 5432                |
 
 <div id="использование"></div>
 
@@ -75,6 +81,27 @@ uv run python manage.py runserver
 ```
 Открыть в браузере
 http://127.0.0.1:8000/
+
+
+## 📦 Управление данными
+
+```bash
+# Очистка БД
+uv run python manage.py dell_all
+
+# Загрузка тестовых данных из фикстур
+uv run python manage.py seed_db
+```
+
+## 👤 Админ-панель
+
+```bash
+# Создание суперпользователя
+uv run python manage.py createsuperuser
+```
+Админка доступна по адресу: /admin
+
+Зарегистрированные модели: Category, Product, Contact
 
 <div id="разработка"></div>
 
@@ -132,10 +159,29 @@ uv run pre-commit run --all-files
 
 | Модуль | Функция/Класс | Краткое описание |
 |--------|---------------|------------------|
+| [**`admin.py`**](docs/api/admin.md) | | |
+| | [📦 CategoryAdmin](docs/api/admin.md#CategoryAdmin) | Настройки административной панели Категорий. |
+| | [📦 ProductAdmin](docs/api/admin.md#ProductAdmin) | Настройки административной панели Продуктов. |
+| | [📦 ContactAdmin](docs/api/admin.md#ContactAdmin) | Настройки административной панели Контактов. |
 | [**`apps.py`**](docs/api/apps.md) | | |
 | | [📦 CatalogConfig](docs/api/apps.md#CatalogConfig) | Конфигурация приложения каталога. |
+| [**`dell_all.py`**](docs/api/dell_all.md) | | |
+| | [📦 Command](docs/api/dell_all.md#Command) | Команда удаления. |
+| | [⚙️ Command.handle](docs/api/dell_all.md#Command.handle) | Хенндл. |
+| | [🔧 handle](docs/api/dell_all.md#handle) | Хенндл. |
 | [**`manage.py`**](docs/api/manage.md) | | |
 | | [🔧 main](docs/api/manage.md#main) | Run administrative tasks. |
+| [**`models.py`**](docs/api/models.md) | | |
+| | [📦 Category](docs/api/models.md#Category) | Модель категории товаров. |
+| | [📦 Product](docs/api/models.md#Product) | Модель товара. |
+| | [📦 Contact](docs/api/models.md#Contact) | Модель контактных данных компании. |
+| | [📦 Meta](docs/api/models.md#Meta) | Мета для админки. |
+| | [📦 Meta](docs/api/models.md#Meta) | Мета для админки. |
+| | [📦 Meta](docs/api/models.md#Meta) | Мета для админки. |
+| [**`seed_db.py`**](docs/api/seed_db.md) | | |
+| | [📦 Command](docs/api/seed_db.md#Command) | Команда засеивания базы тестовыми данными. |
+| | [⚙️ Command.handle](docs/api/seed_db.md#Command.handle) | Хенндл. |
+| | [🔧 handle](docs/api/seed_db.md#handle) | Хенндл. |
 | [**`views.py`**](docs/api/views.md) | | |
 | | [🔧 home](docs/api/views.md#home) | Отображает главную страницу магазина. |
 | | [🔧 contacts](docs/api/views.md#contacts) | Отображает страницу контактов и обрабатывает форму обратной связи. |
@@ -177,6 +223,14 @@ uv run pre-commit run --all-files
 - [x] Приложение catalog с URL-роутингом
 - [x] Шаблоны home и contacts с Bootstrap
 - [x] Форма обратной связи с POST-обработкой
+- [x] Подключение PostgreSQL, настройка `.env`
+- [x] Модели `Category`, `Product`, `Contact`
+- [x] Миграции и регистрация в админке
+- [x] Кастомные команды `dell_all` и `seed_db`
+- [x] Фикстуры для `Category` и `Product`
+- [x] Вывод последних 5 продуктов на главной
+- [x] Отображение контактов из БД на странице контактов
+- [x] Скриншоты shell-команд в `screenshots/`
 - [x] Проверить линтеры (`ruff`, `mypy`)
 - [x] Финальная вычитка документации и обновление README
 - [x] Обновить документацию

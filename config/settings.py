@@ -18,6 +18,11 @@ import environ
 env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
+    DB_USER=(str, None),
+    DB_PASSWORD=(str, None),
+    DB_NAME=(str, None),
+    DB_HOST=(str, None),
+    DB_PORT=(str, None),
 )
 environ.Env.read_env(Path(__file__).resolve().parent.parent / ".env")
 
@@ -77,8 +82,18 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": env("DB_NAME"),
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASSWORD"),
+        "HOST": env("DB_HOST"),
+        "PORT": env("DB_PORT"),
+        "OPTIONS": {
+            "connect_timeout": 10,
+            "options": "-c statement_timeout=30s",
+        },
+        "CONN_MAX_AGE": 600,  # Переиспользование соединений
+        "CONN_HEALTH_CHECKS": True,  # Проверка здоровья соединений
     }
 }
 
@@ -105,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ru-ru"
 
 TIME_ZONE = "Europe/Moscow"
 
