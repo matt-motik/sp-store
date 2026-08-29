@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+from catalog.forms import ProductForm
 from catalog.models import Contact, Product
 
 # Create your views here.
@@ -65,3 +66,25 @@ def contacts(request: HttpRequest) -> HttpResponse:
         "contact": contact,
     }
     return render(request, "contacts.html", context)
+
+
+def add_product(request: HttpRequest) -> HttpResponse:
+    """Отображает страницу добавления товара и обрабатывает форму добавления.
+
+    Args:
+        request: HTTP-запрос (GET или POST).
+
+    Returns:
+        Отрендеренный шаблон страницы добавления товара.
+        При успешной отправке формы — редирект на эту же страницу.
+    """
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save()
+            messages.success(request, "Товар успешно добавлен!")
+            return redirect("catalog:product_detail", pk=product.pk)
+    else:
+        form = ProductForm()
+
+    return render(request, "add_product.html", {"form": form})
