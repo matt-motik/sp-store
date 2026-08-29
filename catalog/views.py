@@ -101,10 +101,10 @@ def add_category(request: HttpRequest) -> HttpResponse:
         При успешной отправке формы — редирект на страницу добавления товара.
     """
     if request.method == "POST":
-        form = CategoryForm(request.POST, request.FILES)
+        form = CategoryForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Товар успешно добавлен!")
+            messages.success(request, "Категория успешно добавлена!")
             return redirect("catalog:add_product")
     else:
         form = CategoryForm()
