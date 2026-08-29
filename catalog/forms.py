@@ -7,6 +7,38 @@ from django import forms
 from catalog.models import Category, Product
 
 
+class CategoryForm(forms.ModelForm):
+    """Форма для создания и редактирования категории."""
+
+    class Meta:
+        """
+        Внутренний класс с настройками формы.
+
+        Attributes:
+            model (Model): Модель, с которой связана форма.
+            fields (list): Список полей, включенных в форму.
+            widgets (dict): Словарь с настройками виджетов для полей.
+        """
+
+        model = Category
+        fields = ["name", "description"]
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Введите название категории",
+                }
+            ),
+            "description": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 4,
+                    "placeholder": "Введите описание категории",
+                }
+            ),
+        }
+
+
 class ProductForm(forms.ModelForm):
     """Форма для создания и редактирования товара."""
 
