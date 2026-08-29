@@ -2,7 +2,7 @@
 
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from catalog.models import Contact, Product
 
@@ -19,12 +19,22 @@ def home(request: HttpRequest) -> HttpResponse:
         Отрендеренный шаблон главной страницы.
     """
     last_products = Product.objects.all().order_by("-created_at")[:5]
-    print("=" * 50)
-    print("Последние 5 созданных продуктов:")
-    for product in last_products:
-        print(f"  - {product.name} (цена: {product.price}, создан: {product.created_at})")
-    print("=" * 50)
-    return render(request, "home.html")
+    context = {"last_products": last_products}
+    return render(request, "home.html", context)
+
+
+def product_detail(request: HttpRequest, pk: int) -> HttpResponse:
+    """Отображает подробную информацию о продукте.
+
+    Args:
+        request: HTTP-запрос (GET или POST).
+
+    Returns:
+        Отрендеренный шаблон страницы продукта.
+    """
+    product = get_object_or_404(Product, pk=pk)
+    context = {"product": product}
+    return render(request, "product_detail.html", context)
 
 
 def contacts(request: HttpRequest) -> HttpResponse:
