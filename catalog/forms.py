@@ -3,6 +3,7 @@
 import os
 
 from django import forms
+from django.core.files.uploadedfile import UploadedFile
 
 from catalog.models import Category, Product
 
@@ -98,11 +99,13 @@ class ProductForm(forms.ModelForm):
     def clean_price(self) -> float:
         """Проверяет, что цена больше 0."""
         price = self.cleaned_data.get("price")
-        if price is not None and price <= 0:
+        if price is None:
+            raise forms.ValidationError("Цена обязательна для заполнения")
+        if price <= 0:
             raise forms.ValidationError("Цена должна быть больше 0")
-        return price
+        return float(price)
 
-    def clean_image(self):
+    def clean_image(self) -> UploadedFile | None:
         """Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP."""
         image = self.cleaned_data.get("image")
         if image:
