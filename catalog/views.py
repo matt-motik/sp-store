@@ -57,10 +57,10 @@ def contacts(request: HttpRequest) -> HttpResponse:
 
         if all([name, phone, message]):
             print(f"You have new message from {name}({phone}): {message}")
-            messages.success(request, "Сообщение успешно отправлено!")
-            return redirect("catalog:contacts")  # PRG-паттерн
+            messages.success(request, "Сообщение успешно отправлено!", extra_tags="contact")
+            return redirect("catalog:contacts")
         else:
-            messages.error(request, "Пожалуйста, заполните все поля")
+            messages.error(request, "Пожалуйста, заполните все поля", extra_tags="contact")
 
     context = {
         "contact": contact,
@@ -82,7 +82,7 @@ def add_product(request: HttpRequest) -> HttpResponse:
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             product = form.save()
-            messages.success(request, "Товар успешно добавлен!")
+            messages.success(request, f"Товар '{product.name}' успешно добавлен!", extra_tags="product")
             return redirect("catalog:product_detail", pk=product.pk)
     else:
         form = ProductForm()
@@ -104,7 +104,7 @@ def add_category(request: HttpRequest) -> HttpResponse:
         form = CategoryForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Категория успешно добавлена!")
+            messages.success(request, "Категория успешно добавлена!", extra_tags="category")
             return redirect("catalog:add_product")
     else:
         form = CategoryForm()
