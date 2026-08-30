@@ -10,7 +10,14 @@
 ## 🚀 Возможности программы
 
 Проект представляет собой интернет магазин, написанный на Python с применением фреймворка Django.
-
+- **Главная страница** с отображением последних 5 товаров
+- **Детальная страница товара** с полной информацией
+- **Добавление товаров** через форму с валидацией
+- **Добавление категорий** через форму
+- **Страница контактов** с формой обратной связи
+- **Загрузка изображений** с валидацией (размер до 0.5MB, форматы JPG/PNG/WEBP)
+- **Адаптивная вёрстка** с Bootstrap 5
+- **Админ-панель** для управления товарами, категориями и контактами
 
 ## 📋 Содержание
 
@@ -31,10 +38,16 @@
 
 | Компонент   | Технология |
 |-------------|------------|
-| **Django**  | `https://www.djangoproject.com/` |
+| **Язык**        | Python 3.14 |
+| **Фреймворк**   | Django 6.1 |
 | **База данных** | PostgreSQL |
-| **Верстка** | Bootstrap 5 |
-| **Иконки**  | Bootstrap Icons |
+| **ORM**         | Django ORM |
+| **Вёрстка**     | Bootstrap 5 |
+| **Иконки**      | Bootstrap Icons |
+| **Управление зависимостями** | uv |
+| **Линтинг**     | Ruff |
+| **Типизация**   | MyPy |
+| **Pre-commit**  | pre-commit |
 
 
 <div id="установка"></div>
@@ -114,9 +127,23 @@ sp-store/
 ├── config/              # конфигурация Django
 ├── catalog/             # приложение каталога
 │   ├── templates/       # шаблоны home.html, contacts.html
+│   │   ├── include/             # Включаемые шаблоны
+│   │   │   ├── navbar.html      # Навигация
+│   │   │   └── footer.html      # Подвал
+│   │   ├── base.html            # Базовый шаблон
+│   │   ├── home.html            # Главная страница
+│   │   ├── product_detail.html  # Детали товара
+│   │   ├── add_product.html     # Добавление товара
+│   │   ├── add_category.html    # Добавление категории
+│   │   └── contacts.html        # Страница контактов
+│   ├── admin.py             # Настройки админки
+│   ├── forms.py             # Формы (ProductForm, CategoryForm)
+│   ├── models.py            # Модели (Category, Product, Contact)
 │   └── views.py         # контроллеры
 ├── static/              # Bootstrap, иконки, JS
-├── templates/           # глобальные шаблоны (если есть)
+├── media/                   # Загруженные пользователем файлы
+├── docs/                    # Документация
+├── screenshots/             # Скриншоты
 ├── manage.py
 ├── pyproject.toml       # uv + ruff + mypy
 └── README.md
@@ -169,6 +196,15 @@ uv run pre-commit run --all-files
 | | [📦 Command](docs/api/dell_all.md#Command) | Команда удаления. |
 | | [⚙️ Command.handle](docs/api/dell_all.md#Command.handle) | Хенндл. |
 | | [🔧 handle](docs/api/dell_all.md#handle) | Хенндл. |
+| [**`forms.py`**](docs/api/forms.md) | | |
+| | [📦 CategoryForm](docs/api/forms.md#CategoryForm) | Форма для создания и редактирования категории. |
+| | [📦 ProductForm](docs/api/forms.md#ProductForm) | Форма для создания и редактирования товара. |
+| | [⚙️ ProductForm.clean_price](docs/api/forms.md#ProductForm.clean_price) | Проверяет, что цена больше 0. |
+| | [⚙️ ProductForm.clean_image](docs/api/forms.md#ProductForm.clean_image) | Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP. |
+| | [📦 Meta](docs/api/forms.md#Meta) | Внутренний класс с настройками формы. |
+| | [📦 Meta](docs/api/forms.md#Meta) | Внутренний класс с настройками формы. |
+| | [🔧 clean_price](docs/api/forms.md#clean_price) | Проверяет, что цена больше 0. |
+| | [🔧 clean_image](docs/api/forms.md#clean_image) | Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP. |
 | [**`manage.py`**](docs/api/manage.md) | | |
 | | [🔧 main](docs/api/manage.md#main) | Run administrative tasks. |
 | [**`models.py`**](docs/api/models.md) | | |
@@ -183,8 +219,11 @@ uv run pre-commit run --all-files
 | | [⚙️ Command.handle](docs/api/seed_db.md#Command.handle) | Хенндл. |
 | | [🔧 handle](docs/api/seed_db.md#handle) | Хенндл. |
 | [**`views.py`**](docs/api/views.md) | | |
-| | [🔧 home](docs/api/views.md#home) | Отображает главную страницу магазина. |
+| | [🔧 home](docs/api/views.md#home) | Отображает главную страницу магазина с пагинацией. |
+| | [🔧 product_detail](docs/api/views.md#product_detail) | Отображает подробную информацию о продукте. |
 | | [🔧 contacts](docs/api/views.md#contacts) | Отображает страницу контактов и обрабатывает форму обратной связи. |
+| | [🔧 add_product](docs/api/views.md#add_product) | Отображает страницу добавления товара и обрабатывает форму добавления. |
+| | [🔧 add_category](docs/api/views.md#add_category) | Отображает страницу добавления категории и обрабатывает форму добавления. |
 
 > 📘 **Полная документация** с примерами и описанием параметров доступна в папке [`docs/api`](docs/api).
 </details>
@@ -230,6 +269,11 @@ uv run pre-commit run --all-files
 - [x] Фикстуры для `Category` и `Product`
 - [x] Вывод последних 5 продуктов на главной
 - [x] Отображение контактов из БД на странице контактов
+- [x] Детальная страница товара (`/products/<id>/`)
+- [x] Добавление товаров через форму (`/products/add/`)
+- [x] Добавление категорий через форму (`/category/add/`)
+- [x] Валидация изображений (размер 0.5MB, форматы JPG/PNG/WEBP)
+- [x] Пагинация на главной странице (по 8 товаров)
 - [x] Скриншоты shell-команд в `screenshots/`
 - [x] Проверить линтеры (`ruff`, `mypy`)
 - [x] Финальная вычитка документации и обновление README
