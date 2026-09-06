@@ -7,3 +7,5 @@ class CatalogConfig(AppConfig):
     """Конфигурация приложения каталога."""
 
     name = "catalog"
+    default_auto_field = "django.db.models.BigAutoField"
+    verbose_name = "Каталог"

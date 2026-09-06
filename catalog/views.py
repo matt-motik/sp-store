@@ -68,36 +68,6 @@ class ContactsView(View):
         return redirect("catalog:contacts")
 
 
-# def contacts(request: HttpRequest) -> HttpResponse:
-#     """Отображает страницу контактов и обрабатывает форму обратной связи.
-#
-#     Args:
-#         request: HTTP-запрос (GET или POST).
-#
-#     Returns:
-#         Отрендеренный шаблон страницы контактов.
-#         При успешной отправке формы — редирект на эту же страницу.
-#     """
-#     contact = Contact.objects.first()
-#
-#     if request.method == "POST":
-#         name = request.POST.get("name")
-#         phone = request.POST.get("phone")
-#         message = request.POST.get("message")
-#
-#         if all([name, phone, message]):
-#             print(f"You have new message from {name}({phone}): {message}")
-#             messages.success(request, "Сообщение успешно отправлено!", extra_tags="contact")
-#             return redirect("catalog:contacts")
-#         else:
-#             messages.error(request, "Пожалуйста, заполните все поля", extra_tags="contact")
-#
-#     context = {
-#         "contact": contact,
-#     }
-#     return render(request, "catalog/contacts.html", context)
-
-
 class ProductCreateView(CreateView):
     """
     Представление для добавления товара.
