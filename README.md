@@ -10,7 +10,7 @@
 ## 🚀 Возможности программы
 
 Проект представляет собой интернет магазин, написанный на Python с применением фреймворка Django.
-- **Главная страница** с отображением последних 5 товаров
+- **Главная страница** с отображением последних 8 товаров
 - **Детальная страница товара** с полной информацией
 - **Добавление товаров** через форму с валидацией
 - **Добавление категорий** через форму
@@ -183,6 +183,7 @@ sp-store/
 │   ├── migrations/
 │   │   ├── 0001_initial.py
 │   │   ├── 0002_contact_alter_product_name.py
+│   │   ├── 0003_product_in_stock.py
 │   │   └── __init__.py
 │   ├── templates/
 │   │   └── catalog/
@@ -202,8 +203,10 @@ sp-store/
 ├── config/
 │   ├── __init__.py
 │   ├── asgi.py
+│   ├── mixins.py
 │   ├── settings.py
 │   ├── urls.py
+│   ├── validators.py
 │   └── wsgi.py
 ├── screenshots/
 │   ├── дз1.png
@@ -293,16 +296,22 @@ uv run pre-commit run --all-files
 | | [📦 ProductForm](docs/api/forms.md#ProductForm) | Форма для создания и редактирования товара. |
 | | [⚙️ ProductForm.clean_price](docs/api/forms.md#ProductForm.clean_price) | Проверяет, что цена больше 0. |
 | | [⚙️ ProductForm.clean_image](docs/api/forms.md#ProductForm.clean_image) | Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP. |
+| | [⚙️ ProductForm.clean_name](docs/api/forms.md#ProductForm.clean_name) | Проверяет, что имя не содержит запрещённые слова. |
+| | [⚙️ ProductForm.clean_description](docs/api/forms.md#ProductForm.clean_description) | Проверяет, что описание не содержит запрещённые слова. |
 | | [📦 Meta](docs/api/forms.md#Meta) | Внутренний класс с настройками формы. |
 | | [📦 Meta](docs/api/forms.md#Meta) | Внутренний класс с настройками формы. |
 | | [🔧 clean_price](docs/api/forms.md#clean_price) | Проверяет, что цена больше 0. |
 | | [🔧 clean_image](docs/api/forms.md#clean_image) | Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP. |
+| | [🔧 clean_name](docs/api/forms.md#clean_name) | Проверяет, что имя не содержит запрещённые слова. |
+| | [🔧 clean_description](docs/api/forms.md#clean_description) | Проверяет, что описание не содержит запрещённые слова. |
 | | [📦 BlogPostForm](docs/api/forms.md#BlogPostForm) | Форма для создания и редактирования записи блога. |
 | | [⚙️ BlogPostForm.clean_preview](docs/api/forms.md#BlogPostForm.clean_preview) | Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP. |
 | | [📦 Meta](docs/api/forms.md#Meta) | Внутренний класс с настройками формы. |
 | | [🔧 clean_preview](docs/api/forms.md#clean_preview) | Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP. |
 | [**`manage.py`**](docs/api/manage.md) | | |
 | | [🔧 main](docs/api/manage.md#main) | Run administrative tasks. |
+| [**`mixins.py`**](docs/api/mixins.md) | | |
+| | [📦 BootstrapStyleMixin](docs/api/mixins.md#BootstrapStyleMixin) | Миксин для стилизации полей формы под Bootstrap. |
 | [**`models.py`**](docs/api/models.md) | | |
 | | [📦 Category](docs/api/models.md#Category) | Модель категории товаров. |
 | | [📦 Product](docs/api/models.md#Product) | Модель товара. |
@@ -316,6 +325,8 @@ uv run pre-commit run --all-files
 | | [📦 Command](docs/api/seed_db.md#Command) | Команда засеивания базы тестовыми данными. |
 | | [⚙️ Command.handle](docs/api/seed_db.md#Command.handle) | Хенндл. |
 | | [🔧 handle](docs/api/seed_db.md#handle) | Хенндл. |
+| [**`validators.py`**](docs/api/validators.md) | | |
+| | [🔧 validate_image_file](docs/api/validators.md#validate_image_file) | Проверяет размер и формат загружаемого изображения. |
 | [**`views.py`**](docs/api/views.md) | | |
 | | [📦 ProductListView](docs/api/views.md#ProductListView) | Представление для отображения списка товаров с пагинацией. |
 | | [⚙️ ProductListView.get_queryset](docs/api/views.md#ProductListView.get_queryset) | Возвращает отсортированный список товаров. |

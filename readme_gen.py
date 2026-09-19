@@ -156,7 +156,7 @@ def generate_project_structure() -> str:
             return False
         if any(part in EXCLUDE_DIRS for part in relative_parts):
             return False
-        return path.name in EXCLUDE_FILES
+        return path.name not in EXCLUDE_FILES
 
     def get_visible_items(directory: Path) -> list[Path]:
         """Возвращает отсортированные элементы каталога после фильтрации."""
