@@ -1,5 +1,7 @@
 """Модуль форм."""
 
+from typing import Any
+
 from django import forms
 from django.core.files.uploadedfile import UploadedFile
 
@@ -48,13 +50,11 @@ class CategoryForm(BootstrapStyleMixin, forms.ModelForm):
         widgets = {
             "name": forms.TextInput(
                 attrs={
-                    "class": "form-control",
                     "placeholder": "Введите название категории",
                 }
             ),
             "description": forms.Textarea(
                 attrs={
-                    "class": "form-control",
                     "rows": 4,
                     "placeholder": "Введите описание категории",
                 }
@@ -65,16 +65,10 @@ class CategoryForm(BootstrapStyleMixin, forms.ModelForm):
 class ProductForm(BootstrapStyleMixin, forms.ModelForm):
     """Форма для создания и редактирования товара."""
 
-    category = forms.ModelChoiceField(
-        queryset=Category.objects.all(),
-        empty_label="Выберите категорию",  # Это работает как плейсхолдер
-        widget=forms.Select(
-            attrs={
-                "class": "form-select",
-                "aria-describedby": "categoryHelp",
-            }
-        ),
-    )
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Обновляет queryset категорий при инициализации формы."""
+        super().__init__(*args, **kwargs)
+        self.fields["category"].queryset = Category.objects.all()
 
     class Meta:
         """
@@ -91,20 +85,17 @@ class ProductForm(BootstrapStyleMixin, forms.ModelForm):
         widgets = {
             "name": forms.TextInput(
                 attrs={
-                    "class": "form-control",
                     "placeholder": "Введите название товара",
                 }
             ),
             "description": forms.Textarea(
                 attrs={
-                    "class": "form-control",
                     "rows": 4,
                     "placeholder": "Введите описание товара",
                 }
             ),
             "price": forms.NumberInput(
                 attrs={
-                    "class": "form-control",
                     "step": "0.01",
                     "placeholder": "0.00",
                     "min": "0",
@@ -112,8 +103,12 @@ class ProductForm(BootstrapStyleMixin, forms.ModelForm):
             ),
             "image": forms.FileInput(
                 attrs={
-                    "class": "form-control",
                     "accept": "image/jpeg,image/jpg,image/png,image/webp",
+                }
+            ),
+            "category": forms.Select(
+                attrs={
+                    "aria-describedby": "categoryHelp",
                 }
             ),
         }
