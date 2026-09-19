@@ -1,14 +1,53 @@
 """Модуль форм."""
 
-import os
+from pathlib import Path
 
 from django import forms
 from django.core.files.uploadedfile import UploadedFile
 
 from catalog.models import Category, Product
 
+EXCLUDE_WORDS = ["казино", "криптовалюта", "крипта", "биржа", "дешево", "бесплатно", "обман", "полиция", "радар"]
 
-class CategoryForm(forms.ModelForm):
+
+def _check_banned_words(value: str, field_name: str) -> str:
+    """Проверяет строку на запрещённые слова.
+
+    Args:
+        value: Проверяемое значение.
+        field_name: Имя поля для текста ошибки.
+
+    Returns:
+        str: Исходное значение, если проверка пройдена.
+
+    Raises:
+        forms.ValidationError: Если найдено запрещённое слово.
+    """
+    lowered = (value or "").lower()
+    banned = next((w for w in EXCLUDE_WORDS if w in lowered), None)
+    if banned:
+        raise forms.ValidationError(f'{field_name} не должно содержать слово "{banned}".')
+    return value
+
+
+class BootstrapStyleMixin:
+    """Миксин для стилизации полей формы под Bootstrap."""
+
+    def __init__(self, *args, **kwargs) -> None:
+        """Навешивает CSS-классы на виджеты полей."""
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            widget = field.widget
+            if isinstance(widget, forms.CheckboxInput):
+                css_class = "form-check-input"
+            elif isinstance(widget, forms.Select):
+                css_class = "form-select"
+            else:
+                css_class = "form-control"
+            widget.attrs["class"] = css_class
+
+
+class CategoryForm(BootstrapStyleMixin, forms.ModelForm):
     """Форма для создания и редактирования категории."""
 
     class Meta:
@@ -40,7 +79,7 @@ class CategoryForm(forms.ModelForm):
         }
 
 
-class ProductForm(forms.ModelForm):
+class ProductForm(BootstrapStyleMixin, forms.ModelForm):
     """Форма для создания и редактирования товара."""
 
     category = forms.ModelChoiceField(
@@ -65,7 +104,7 @@ class ProductForm(forms.ModelForm):
         """
 
         model = Product
-        fields = ["name", "description", "image", "category", "price"]
+        fields = ["name", "description", "image", "category", "price", "in_stock"]
         widgets = {
             "name": forms.TextInput(
                 attrs={
@@ -91,7 +130,7 @@ class ProductForm(forms.ModelForm):
             "image": forms.FileInput(
                 attrs={
                     "class": "form-control",
-                    "accept": "image/*",
+                    "accept": "image/jpeg,image/jpg,image/png,image/webp",
                 }
             ),
         }
@@ -113,7 +152,17 @@ class ProductForm(forms.ModelForm):
                 raise forms.ValidationError("Изображение не должно превышать 0.5MB")
 
             valid_extensions = [".jpg", ".jpeg", ".png", ".webp"]
-            ext = os.path.splitext(image.name)[1].lower()
+            ext = Path(image.name).suffix.lower()
             if ext not in valid_extensions:
                 raise forms.ValidationError("Поддерживаются только JPG, PNG, WEBP")
+            if image.content_type not in ("image/jpeg", "image/jpg", "image/png", "image/webp"):
+                raise forms.ValidationError("Поддерживаются только JPG, PNG, WEBP")
         return image
+
+    def clean_name(self) -> str:
+        """Проверяет, что имя не содержит запрещённые слова."""
+        return _check_banned_words(self.cleaned_data.get("name"), "Имя")
+
+    def clean_description(self) -> str:
+        """Проверяет, что описание не содержит запрещённые слова."""
+        return _check_banned_words(self.cleaned_data.get("description"), "Описание")

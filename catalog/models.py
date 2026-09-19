@@ -55,6 +55,7 @@ class Product(models.Model):
     image = models.ImageField(upload_to="products/", null=True, blank=True, verbose_name="Изображение")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="products", verbose_name="Категория")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена за покупку")
+    in_stock = models.BooleanField(default=False, verbose_name="Есть в наличии")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата последнего изменения")
 
