@@ -46,6 +46,7 @@ class Product(models.Model):
         image (ImageField): Изображение товара (необязательное поле)
         category (ForeignKey): Связь с моделью Category
         price (Decimal): Цена за покупку (максимум 10 цифр, 2 знака после запятой)
+        in_stock (bool): Есть в наличии
         created_at (datetime): Дата и время создания записи
         updated_at (datetime): Дата и время последнего обновления записи
     """
