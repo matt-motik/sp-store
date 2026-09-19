@@ -1,12 +1,11 @@
 """Модуль форм."""
 
-from pathlib import Path
-from typing import Any
-
 from django import forms
 from django.core.files.uploadedfile import UploadedFile
 
 from catalog.models import Category, Product
+from config.mixins import BootstrapStyleMixin
+from config.validators import validate_image_file
 
 EXCLUDE_WORDS = ["казино", "криптовалюта", "крипта", "биржа", "дешево", "бесплатно", "обман", "полиция", "радар"]
 
@@ -29,23 +28,6 @@ def _check_banned_words(value: str, field_name: str) -> str:
     if banned:
         raise forms.ValidationError(f'{field_name} не должно содержать слово "{banned}".')
     return value
-
-
-class BootstrapStyleMixin(forms.Form):
-    """Миксин для стилизации полей формы под Bootstrap."""
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Навешивает CSS-классы на виджеты полей."""
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            widget = field.widget
-            if isinstance(widget, forms.CheckboxInput):
-                css_class = "form-check-input"
-            elif isinstance(widget, forms.Select):
-                css_class = "form-select"
-            else:
-                css_class = "form-control"
-            widget.attrs["class"] = css_class
 
 
 class CategoryForm(BootstrapStyleMixin, forms.ModelForm):
@@ -149,15 +131,7 @@ class ProductForm(BootstrapStyleMixin, forms.ModelForm):
         """Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP."""
         image = self.cleaned_data.get("image")
         if image:
-            if image.size > 0.5 * 1024 * 1024:
-                raise forms.ValidationError("Изображение не должно превышать 0.5MB")
-
-            valid_extensions = [".jpg", ".jpeg", ".png", ".webp"]
-            ext = Path(image.name).suffix.lower()
-            if ext not in valid_extensions:
-                raise forms.ValidationError("Поддерживаются только JPG, PNG, WEBP")
-            if image.content_type not in ("image/jpeg", "image/jpg", "image/png", "image/webp"):
-                raise forms.ValidationError("Поддерживаются только JPG, PNG, WEBP")
+            validate_image_file(image)
         return image
 
     def clean_name(self) -> str:
