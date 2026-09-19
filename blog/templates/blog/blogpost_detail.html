@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ blogpost.title }}{% endblock %}
+{% block header %}{{ blogpost.title }}{% endblock %}
+{% block description %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8">
+        <div class="card box-shadow">
+            <!-- Изображение -->
+            {% if blogpost.preview %}
+            <div class="bg-light d-flex align-items-center justify-content-center overflow-hidden" style="height: 400px;">
+                <img src="{{ blogpost.preview.url }}" class="img-fluid" alt="{{ blogpost.title }}"
+                     style="object-fit: contain; height: 100%; width: 100%;">
+            </div>
+            {% endif %}
+
+            <div class="card-body">
+                <!-- Мета-информация -->
+                <div class="d-flex justify-content-between align-items-center mb-3 text-muted small">
+                    <div>
+                        <i class="bi bi-eye"></i> {{ blogpost.views_count }} просмотров
+                    </div>
+                    <div>
+                        {% if blogpost.is_published %}
+                            <span class="badge bg-success">Опубликовано</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Черновик</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Содержимое -->
+                <div class="mb-4">
+                        <div>{{ blogpost.content|linebreaks }}</div>
+                </div>
+
+                <!-- Кнопки действий -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                    <a href="{% url 'blog:list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Назад к списку
+                    </a>
+                    <div>
+                        <a href="{% url 'blog:edit' blogpost.pk %}" class="btn btn-outline-primary me-2">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                        <a href="{% url 'blog:delete' blogpost.pk %}" class="btn btn-outline-danger">
+                            <i class="bi bi-trash"></i> Удалить
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer text-muted small">
+                <div class="row">
+                    <div class="col-6">
+                        <i class="bi bi-calendar-plus"></i> Создан: {{ blogpost.created_at|date:"d.m.Y H:i" }}
+                    </div>
+                    <div class="col-6 text-end">
+                        <i class="bi bi-calendar-check"></i> Обновлен: {{ blogpost.updated_at|date:"d.m.Y H:i" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

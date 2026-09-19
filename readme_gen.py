@@ -10,12 +10,12 @@ from pathlib import Path
 from typing import Any
 
 # ==================== НАСТРОЙКИ ====================
-SOURCE_DIRS = ["catalog", "config"]
-EXCLUDE_DIRS = {".venv", "venv", "env", "__pycache__", "tests", "docs"}
-EXCLUDE_FILES = {"generate_readme.py", "readme_gen.py", "setup.py"}
+SOURCE_DIRS = ["catalog", "blog", "config"]
+EXCLUDE_DIRS = {".venv", "venv", "env", "__pycache__", "htmlcov", "tests", "docs", ".git", ".idea", ".vscode"}
+EXCLUDE_FILES = {"media", "readme_gen.py", "setup.py", ".env", "db.sqlite3"}
 README_FILE = "README.md"
 DOCS_OUTPUT_DIR = Path("docs/api")
-
+PROJECT_ROOT = Path(__file__).resolve().parent
 
 # ===================================================
 
@@ -144,6 +144,52 @@ def generate_detailed_docs(all_docs: list[dict[str, Any]]) -> None:
                 f.write("---\n\n")
 
 
+def generate_project_structure() -> str:
+    """Генерирует дерево проекта в формате Markdown."""
+
+    def should_include(path: Path) -> bool:
+        """Определяет, нужно ли включать файл или каталог в структуру."""
+        relative_parts = path.relative_to(PROJECT_ROOT).parts
+
+        # Скрытые файлы/каталоги и явно исключённые элементы не показываем.
+        if any(part.startswith(".") for part in relative_parts):
+            return False
+        if any(part in EXCLUDE_DIRS for part in relative_parts):
+            return False
+        return path.name in EXCLUDE_FILES
+
+    def get_visible_items(directory: Path) -> list[Path]:
+        """Возвращает отсортированные элементы каталога после фильтрации."""
+        return sorted(
+            (item for item in directory.iterdir() if should_include(item)),
+            key=lambda p: (not p.is_dir(), p.name.lower()),
+        )
+
+    def get_tree(directory: Path, prefix: str = "") -> list[str]:
+        """Рекурсивно строит дерево файлов и каталогов."""
+        lines: list[str] = []
+        items = get_visible_items(directory)
+
+        for index, item in enumerate(items):
+            is_last = index == len(items) - 1
+            branch = "└── " if is_last else "├── "
+            name = f"{item.name}/" if item.is_dir() else item.name
+
+            lines.append(f"{prefix}{branch}{name}")
+
+            if item.is_dir():
+                child_prefix = prefix + ("    " if is_last else "│   ")
+                lines.extend(get_tree(item, child_prefix))
+
+        return lines
+
+    tree_lines = ["```text", f"{PROJECT_ROOT.name}/"]
+    tree_lines.extend(get_tree(PROJECT_ROOT))
+    tree_lines.append("```")
+
+    return "\n".join(tree_lines)
+
+
 def run_tests_and_get_results_src() -> str:
     """Запускает pytest с coverage и возвращает форматированный вывод."""
     print("\n🧪 Запуск тестов с coverage...")
@@ -151,8 +197,6 @@ def run_tests_and_get_results_src() -> str:
     try:
         # Запускаем pytest с coverage
         result = subprocess.run(
-            #     ["uv", "run", "pytest", "--cov=catalog", "--cov=config",
-            #     "--cov-report=term-missing", "--cov-report=html:htmlcov/src"],
             ["uv", "run", "pytest"],
             capture_output=True,
             text=True,
@@ -234,7 +278,7 @@ def run_tests_and_get_results_main() -> str:
                 coverage_summary += line + "\n"
 
         # Форматируем вывод для Markdown
-        formatted_output = "### 📊 Результаты тестов maim.py\n\n"
+        formatted_output = "### 📊 Результаты тестов main.py\n\n"
         formatted_output += "```\n"
 
         # Добавляем основную информацию
@@ -302,6 +346,47 @@ def update_readme_with_api_table(api_table: str) -> bool:
     else:
         new_content = content + "\n\n" + new_section
         print("⚠️ Маркеры не найдены, секция добавлена в конец README.md")
+
+    with open(README_FILE, "w", encoding="utf-8") as f:
+        f.write(new_content)
+
+    return True
+
+
+def update_readme_with_project_structure(structure: str) -> bool:
+    """Обновляет README.md, вставляя структуру проекта между маркерами."""
+    if not Path(README_FILE).exists():
+        print(f"❌ Файл {README_FILE} не найден!")
+        return False
+
+    with open(README_FILE, encoding="utf-8") as f:
+        content = f.read()
+
+    pattern = r"(<!-- СЕКЦИЯ_AUTO_STRUCTURE: СТАРТ -->).*?(<!-- СЕКЦИЯ_AUTO_STRUCTURE: КОНЕЦ -->)"
+
+    new_section = f"""<!-- СЕКЦИЯ_AUTO_STRUCTURE: СТАРТ -->
+<details>
+<summary>📁 Структура проекта (развёрнуть)</summary>
+
+*Этот раздел генерируется автоматически.*
+
+{structure}
+
+</details>
+<!-- СЕКЦИЯ_AUTO_STRUCTURE: КОНЕЦ -->"""
+
+    if re.search(pattern, content, re.DOTALL):
+        new_content = re.sub(pattern, new_section, content, flags=re.DOTALL)
+        print("✅ Обновлена существующая секция структуры в README.md")
+    else:
+        # Вставляем после секции API
+        api_pattern = r"(<!-- СЕКЦИЯ_AUTO_API: КОНЕЦ -->)"
+        if re.search(api_pattern, content):
+            new_content = re.sub(api_pattern, f"<!-- СЕКЦИЯ_AUTO_API: КОНЕЦ -->\n\n{new_section}", content, count=1)
+            print("✅ Секция структуры добавлена после секции API")
+        else:
+            new_content = content + "\n\n" + new_section
+            print("⚠️ Маркеры API не найдены, структура добавлена в конец README.md")
 
     with open(README_FILE, "w", encoding="utf-8") as f:
         f.write(new_content)
@@ -397,12 +482,19 @@ def main() -> None:
     if update_readme_with_api_table(api_table):
         print("✅ README.md обновлён (секция API)")
 
-    # ===== 4. Генерация детальной документации =====
+    # ===== 4. Генерация структуры проекта =====
+    print("\n📁 Генерация структуры проекта...")
+    project_structure = generate_project_structure()
+
+    if update_readme_with_project_structure(project_structure):
+        print("✅ README.md обновлён (секция структуры)")
+
+    # ===== 5. Генерация детальной документации =====
     print(f"\n📚 Генерация детальной документации в {DOCS_OUTPUT_DIR}...")
     generate_detailed_docs(all_docs)
     print(f"✅ Создано {len(all_docs)} страниц документации")
 
-    # ===== 5. Запуск тестов и обновление секции =====
+    # ===== 6. Запуск тестов и обновление секции =====
     print("\n" + "=" * 50)
     test_results_src = run_tests_and_get_results_src()
     # test_results_main = run_tests_and_get_results_main()

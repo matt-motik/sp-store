@@ -18,6 +18,10 @@
 - **Загрузка изображений** с валидацией (размер до 0.5MB, форматы JPG/PNG/WEBP)
 - **Адаптивная вёрстка** с Bootstrap 5
 - **Админ-панель** для управления товарами, категориями и контактами
+- **Блог** с публикацией, редактированием и удалением записей
+- **Счётчик просмотров** с атомарным обновлением через `F()`
+- **Пагинация в блоге** (по 8 записей)
+- **Отправка email** при достижении 100 просмотров
 
 ## 📋 Содержание
 
@@ -72,16 +76,19 @@ uv run python manage.py runserver
 ```bash
 cp .env.example .env
 ```
-| Переменная       | Описание                    | По умолчанию        |
-|------------------|-----------------------------|---------------------|
-| **SECRET_KEY**   | Секретный ключ Django       | -                   |
-| **DEBUG**        | Режим отладки               | True                |
-| **ALLOWED_HOSTS**| Разрешённые хосты           | localhost,127.0.0.1 |
-| **DB_NAME**      | Имя базы данных PostgreSQL  | -                   |
-| **DB_USER**      | Пользователь PostgreSQL     | -                   |
-| **DB_PASSWORD**  | Пароль PostgreSQL           | -                   |
-| **DB_HOST**      | Хост PostgreSQL             | -                   |
-| **DB_PORT**      | Порт PostgreSQL             | 5432                |
+| Переменная             | Описание                  | По умолчанию        |
+|------------------------|---------------------------|---------------------|
+| **SECRET_KEY**         | Секретный ключ Django     | -                   |
+| **DEBUG**              | Режим отладки             | True                |
+| **ALLOWED_HOSTS**      | Разрешённые хосты         | localhost,127.0.0.1 |
+| **DB_NAME**            | Имя базы данных PostgreSQL| -                   |
+| **DB_USER**            | Пользователь PostgreSQL   | -                   |
+| **DB_PASSWORD**        | Пароль PostgreSQL         | -                   |
+| **DB_HOST**            | Хост PostgreSQL           | -                   |
+| **DB_PORT**            | Порт PostgreSQL           | 5432                |
+| **EMAIL_HOST_USER**    | Логин для email           | -                   |
+| **EMAIL_HOST_PASSWORD**| Пароль приложения         | -                   |
+| **DEFAULT_FROM_EMAIL** | Email отправителя         | -                   |
 
 <div id="использование"></div>
 
@@ -95,6 +102,20 @@ uv run python manage.py runserver
 Открыть в браузере
 http://127.0.0.1:8000/
 
+### 🌐 URL-маршруты
+
+| URL | Описание |
+|-----|----------|
+| `/` | Главная страница (каталог) |
+| `/products/<id>/` | Детали товара |
+| `/products/add/` | Добавление товара |
+| `/category/add/` | Добавление категории |
+| `/contacts/` | Контакты |
+| `/blogs/` | Список записей блога |
+| `/blogs/create/` | Создание записи |
+| `/blogs/<id>/` | Детали записи |
+| `/blogs/<id>/edit/` | Редактирование записи |
+| `/blogs/<id>/delete/` | Удаление записи |
 
 ## 📦 Управление данными
 
@@ -114,7 +135,7 @@ uv run python manage.py createsuperuser
 ```
 Админка доступна по адресу: /admin
 
-Зарегистрированные модели: Category, Product, Contact
+Зарегистрированные модели: Category, Product, Contact, BlogPost
 
 <div id="разработка"></div>
 
@@ -122,32 +143,101 @@ uv run python manage.py createsuperuser
 <div id="структура-проекта"></div>
 
 ### Структура проекта
-```
+<!-- СЕКЦИЯ_AUTO_STRUCTURE: СТАРТ -->
+<details>
+<summary>📁 Структура проекта (развёрнуть)</summary>
+
+*Этот раздел генерируется автоматически.*
+
+```text
 sp-store/
-├── config/              # конфигурация Django
-├── catalog/             # приложение каталога
-│   ├── templates/       # шаблоны home.html, contacts.html
-│   │   ├── include/             # Включаемые шаблоны
-│   │   │   ├── navbar.html      # Навигация
-│   │   │   └── footer.html      # Подвал
-│   │   ├── base.html            # Базовый шаблон
-│   │   ├── home.html            # Главная страница
-│   │   ├── product_detail.html  # Детали товара
-│   │   ├── add_product.html     # Добавление товара
-│   │   ├── add_category.html    # Добавление категории
-│   │   └── contacts.html        # Страница контактов
-│   ├── admin.py             # Настройки админки
-│   ├── forms.py             # Формы (ProductForm, CategoryForm)
-│   ├── models.py            # Модели (Category, Product, Contact)
-│   └── views.py         # контроллеры
-├── static/              # Bootstrap, иконки, JS
-├── media/                   # Загруженные пользователем файлы
-├── docs/                    # Документация
-├── screenshots/             # Скриншоты
+├── blog/
+│   ├── migrations/
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_alter_blogpost_options_blogpost_updated_at.py
+│   │   └── __init__.py
+│   ├── templates/
+│   │   └── blog/
+│   │       ├── blogpost_confirm_delete.html
+│   │       ├── blogpost_detail.html
+│   │       ├── blogpost_form.html
+│   │       └── blogpost_list.html
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── catalog/
+│   ├── fixtures/
+│   │   ├── categories.json
+│   │   └── products.json
+│   ├── management/
+│   │   ├── commands/
+│   │   │   ├── __init__.py
+│   │   │   ├── dell_all.py
+│   │   │   └── seed_db.py
+│   │   └── __init__.py
+│   ├── migrations/
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_contact_alter_product_name.py
+│   │   └── __init__.py
+│   ├── templates/
+│   │   └── catalog/
+│   │       ├── category_form.html
+│   │       ├── contacts.html
+│   │       ├── product_detail.html
+│   │       ├── product_form.html
+│   │       └── product_list.html
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── config/
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── screenshots/
+│   ├── дз1.png
+│   ├── дз2.png
+│   └── дз3.png
+├── static/
+│   ├── css/
+│   │   ├── font/
+│   │   │   ├── fonts/
+│   │   │   │   ├── bootstrap-icons.woff
+│   │   │   │   └── bootstrap-icons.woff2
+│   │   │   ├── bootstrap-icons.css
+│   │   │   └── bootstrap-icons.min.css
+│   │   ├── bootstrap.min.css
+│   │   └── bootstrap.min.css.map
+│   └── js/
+│       ├── bootstrap.bundle.min.js
+│       ├── bootstrap.bundle.min.js.map
+│       └── navigation.js
+├── templates/
+│   ├── include/
+│   │   ├── footer.html
+│   │   └── navbar.html
+│   └── base.html
 ├── manage.py
-├── pyproject.toml       # uv + ruff + mypy
-└── README.md
+├── pyproject.toml
+├── README.md
+└── uv.lock
 ```
+
+</details>
+<!-- СЕКЦИЯ_AUTO_STRUCTURE: КОНЕЦ -->
+
+
 <div id="линтеры"></div>
 
 ### 🔍 Линтеры и форматирование
@@ -158,16 +248,16 @@ sp-store/
 
 ```bash
 # Линтинг
-uv run ruff check catalog/ config/
+uv run ruff check catalog/ blog/ config/
 
 # Автоисправление ошибок
-uv run ruff check --fix catalog/ config/
+uv run ruff check --fix catalog/ blog/ config/
 
 # Форматирование
-uv run ruff format catalog/ config/
+uv run ruff format catalog/ blog/ config/
 
 # Проверка типов
-uv run mypy catalog/ config/
+uv run mypy catalog/ blog/ config/
 ```
 ### Pre-commit hooks
 ```bash
@@ -190,8 +280,10 @@ uv run pre-commit run --all-files
 | | [📦 CategoryAdmin](docs/api/admin.md#CategoryAdmin) | Настройки административной панели Категорий. |
 | | [📦 ProductAdmin](docs/api/admin.md#ProductAdmin) | Настройки административной панели Продуктов. |
 | | [📦 ContactAdmin](docs/api/admin.md#ContactAdmin) | Настройки административной панели Контактов. |
+| | [📦 BlogPostAdmin](docs/api/admin.md#BlogPostAdmin) | Настройки административной панели записи блога. |
 | [**`apps.py`**](docs/api/apps.md) | | |
 | | [📦 CatalogConfig](docs/api/apps.md#CatalogConfig) | Конфигурация приложения каталога. |
+| | [📦 BlogConfig](docs/api/apps.md#BlogConfig) | Конфигурация приложения блога. |
 | [**`dell_all.py`**](docs/api/dell_all.md) | | |
 | | [📦 Command](docs/api/dell_all.md#Command) | Команда удаления. |
 | | [⚙️ Command.handle](docs/api/dell_all.md#Command.handle) | Хенндл. |
@@ -205,6 +297,10 @@ uv run pre-commit run --all-files
 | | [📦 Meta](docs/api/forms.md#Meta) | Внутренний класс с настройками формы. |
 | | [🔧 clean_price](docs/api/forms.md#clean_price) | Проверяет, что цена больше 0. |
 | | [🔧 clean_image](docs/api/forms.md#clean_image) | Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP. |
+| | [📦 BlogPostForm](docs/api/forms.md#BlogPostForm) | Форма для создания и редактирования записи блога. |
+| | [⚙️ BlogPostForm.clean_preview](docs/api/forms.md#BlogPostForm.clean_preview) | Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP. |
+| | [📦 Meta](docs/api/forms.md#Meta) | Внутренний класс с настройками формы. |
+| | [🔧 clean_preview](docs/api/forms.md#clean_preview) | Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP. |
 | [**`manage.py`**](docs/api/manage.md) | | |
 | | [🔧 main](docs/api/manage.md#main) | Run administrative tasks. |
 | [**`models.py`**](docs/api/models.md) | | |
@@ -214,16 +310,51 @@ uv run pre-commit run --all-files
 | | [📦 Meta](docs/api/models.md#Meta) | Мета для админки. |
 | | [📦 Meta](docs/api/models.md#Meta) | Мета для админки. |
 | | [📦 Meta](docs/api/models.md#Meta) | Мета для админки. |
+| | [📦 BlogPost](docs/api/models.md#BlogPost) | Модель записи в блоге. |
+| | [📦 Meta](docs/api/models.md#Meta) | Мета-параметры модели BlogPost. |
 | [**`seed_db.py`**](docs/api/seed_db.md) | | |
 | | [📦 Command](docs/api/seed_db.md#Command) | Команда засеивания базы тестовыми данными. |
 | | [⚙️ Command.handle](docs/api/seed_db.md#Command.handle) | Хенндл. |
 | | [🔧 handle](docs/api/seed_db.md#handle) | Хенндл. |
 | [**`views.py`**](docs/api/views.md) | | |
-| | [🔧 home](docs/api/views.md#home) | Отображает главную страницу магазина с пагинацией. |
-| | [🔧 product_detail](docs/api/views.md#product_detail) | Отображает подробную информацию о продукте. |
-| | [🔧 contacts](docs/api/views.md#contacts) | Отображает страницу контактов и обрабатывает форму обратной связи. |
-| | [🔧 add_product](docs/api/views.md#add_product) | Отображает страницу добавления товара и обрабатывает форму добавления. |
-| | [🔧 add_category](docs/api/views.md#add_category) | Отображает страницу добавления категории и обрабатывает форму добавления. |
+| | [📦 ProductListView](docs/api/views.md#ProductListView) | Представление для отображения списка товаров с пагинацией. |
+| | [⚙️ ProductListView.get_queryset](docs/api/views.md#ProductListView.get_queryset) | Возвращает отсортированный список товаров. |
+| | [📦 ProductDetailView](docs/api/views.md#ProductDetailView) | Представление для отображения товара. |
+| | [📦 ContactsView](docs/api/views.md#ContactsView) | Отображает страницу контактов и обрабатывает форму обратной связи. |
+| | [⚙️ ContactsView.get](docs/api/views.md#ContactsView.get) | Получение данных о контакте для связи. |
+| | [⚙️ ContactsView.post](docs/api/views.md#ContactsView.post) | Отправка обратной связи. |
+| | [📦 ProductCreateView](docs/api/views.md#ProductCreateView) | Представление для добавления товара. |
+| | [⚙️ ProductCreateView.get_success_url](docs/api/views.md#ProductCreateView.get_success_url) | Возвращает URL для перенаправления после успешного создания. |
+| | [⚙️ ProductCreateView.form_valid](docs/api/views.md#ProductCreateView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [📦 CategoryCreateView](docs/api/views.md#CategoryCreateView) | Представление для добавления категории. |
+| | [⚙️ CategoryCreateView.get_success_url](docs/api/views.md#CategoryCreateView.get_success_url) | Возвращает URL для перенаправления после успешного создания. |
+| | [⚙️ CategoryCreateView.form_valid](docs/api/views.md#CategoryCreateView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает отсортированный список товаров. |
+| | [🔧 get](docs/api/views.md#get) | Получение данных о контакте для связи. |
+| | [🔧 post](docs/api/views.md#post) | Отправка обратной связи. |
+| | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного создания. |
+| | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного создания. |
+| | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [📦 BlogPostDetailView](docs/api/views.md#BlogPostDetailView) | Представление для отображения записи. |
+| | [⚙️ BlogPostDetailView.get_object](docs/api/views.md#BlogPostDetailView.get_object) | Переопредение данных записи, для увеличения счётчика просмотров. |
+| | [⚙️ BlogPostDetailView.send_congratulation_email](docs/api/views.md#BlogPostDetailView.send_congratulation_email) | Отправляет поздравление о достижении 100 просмотров. |
+| | [📦 BlogPostListView](docs/api/views.md#BlogPostListView) | Представление для отображения списка опубликованных записей в блоге. |
+| | [⚙️ BlogPostListView.get_queryset](docs/api/views.md#BlogPostListView.get_queryset) | Возвращает отсортированный список записей. |
+| | [📦 BlogPostCreateView](docs/api/views.md#BlogPostCreateView) | Представление для добавления записи блога. |
+| | [⚙️ BlogPostCreateView.get_success_url](docs/api/views.md#BlogPostCreateView.get_success_url) | Возвращает URL для перенаправления после успешного создания. |
+| | [📦 BlogPostUpdateView](docs/api/views.md#BlogPostUpdateView) | Представление для редактирования записи блога. |
+| | [⚙️ BlogPostUpdateView.get_success_url](docs/api/views.md#BlogPostUpdateView.get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
+| | [⚙️ BlogPostUpdateView.form_valid](docs/api/views.md#BlogPostUpdateView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [📦 BlogPostDeleteView](docs/api/views.md#BlogPostDeleteView) | Представление для удаления записи блога. |
+| | [⚙️ BlogPostDeleteView.form_valid](docs/api/views.md#BlogPostDeleteView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 get_object](docs/api/views.md#get_object) | Переопредение данных записи, для увеличения счётчика просмотров. |
+| | [🔧 send_congratulation_email](docs/api/views.md#send_congratulation_email) | Отправляет поздравление о достижении 100 просмотров. |
+| | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает отсортированный список записей. |
+| | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного создания. |
+| | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
+| | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 
 > 📘 **Полная документация** с примерами и описанием параметров доступна в папке [`docs/api`](docs/api).
 </details>
@@ -242,7 +373,7 @@ uv run pre-commit run --all-files
 🎯 Результаты тестов src:
 ============================= test session starts ==============================
 =============================== warnings summary ===============================
-============================== 1 warning in 0.01s ==============================
+============================== 1 warning in 0.02s ==============================
 ```
 
 > 📊 **HTML отчёт покрытия**: [`htmlcov/index.html`](htmlcov/src/index.html)
@@ -274,6 +405,14 @@ uv run pre-commit run --all-files
 - [x] Валидация изображений (размер 0.5MB, форматы JPG/PNG/WEBP)
 - [x] Пагинация на главной странице (по 8 товаров)
 - [x] Скриншоты shell-команд в `screenshots/`
+- [x] Приложение blog с URL-роутингом
+- [x] Модель BlogPost с миграциями
+- [x] Форма BlogPostForm с валидацией
+- [x] Шаблоны блога (list, detail, form, confirm_delete)
+- [x] Пагинация в блоге (по 8 записей)
+- [x] Счётчик просмотров с атомарным обновлением
+- [x] Отправка email при 100 просмотрах
+- [x] Настройка админки для BlogPost
 - [x] Проверить линтеры (`ruff`, `mypy`)
 - [x] Финальная вычитка документации и обновление README
 - [x] Обновить документацию
