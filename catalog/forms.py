@@ -1,6 +1,7 @@
 """Модуль форм."""
 
 from pathlib import Path
+from typing import Any
 
 from django import forms
 from django.core.files.uploadedfile import UploadedFile
@@ -30,10 +31,10 @@ def _check_banned_words(value: str, field_name: str) -> str:
     return value
 
 
-class BootstrapStyleMixin:
+class BootstrapStyleMixin(forms.Form):
     """Миксин для стилизации полей формы под Bootstrap."""
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Навешивает CSS-классы на виджеты полей."""
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
