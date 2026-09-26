@@ -4,6 +4,7 @@ import smtplib
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.db.models import F, QuerySet
 from django.forms import BaseModelForm
@@ -84,7 +85,7 @@ class BlogPostListView(ListView):
         return super().get_queryset().filter(is_published=True).order_by("-created_at")
 
 
-class BlogPostCreateView(CreateView):
+class BlogPostCreateView(LoginRequiredMixin, CreateView):
     """
     Представление для добавления записи блога.
 
@@ -104,7 +105,7 @@ class BlogPostCreateView(CreateView):
         return reverse_lazy("blog:detail", kwargs={"pk": self.object.pk})
 
 
-class BlogPostUpdateView(UpdateView):
+class BlogPostUpdateView(LoginRequiredMixin, UpdateView):
     """
     Представление для редактирования записи блога.
 
@@ -134,7 +135,7 @@ class BlogPostUpdateView(UpdateView):
         return response
 
 
-class BlogPostDeleteView(DeleteView):
+class BlogPostDeleteView(LoginRequiredMixin, DeleteView):
     """
     Представление для удаления записи блога.
 
