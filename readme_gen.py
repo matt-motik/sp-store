@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 # ==================== НАСТРОЙКИ ====================
-SOURCE_DIRS = ["catalog", "blog", "config"]
+SOURCE_DIRS = ["catalog", "blog", "config", "users"]
 EXCLUDE_DIRS = {".venv", "venv", "env", "__pycache__", "htmlcov", "tests", "docs", ".git", ".idea", ".vscode"}
 EXCLUDE_FILES = {"media", "readme_gen.py", "setup.py", ".env", "db.sqlite3"}
 README_FILE = "README.md"
