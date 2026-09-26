@@ -13,5 +13,19 @@
             <i class="bi bi-newspaper me-2"></i>Блог</a>
         <a class="nav-item btn btn-outline-primary" href="{% url 'blog:create' %}">
             <i class="bi bi-plus-circle me-2"></i>Добавить запись в блог</a>
+        {% if user.is_authenticated %}
+        <span class="navbar-text ms-2 me-2">{{ user.email }}</span>
+        <form method="post" action="{% url 'users:logout' %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="nav-item btn btn-outline-danger">
+                <i class="bi bi-box-arrow-right me-2"></i>Выйти
+            </button>
+        </form>
+        {% else %}
+        <a class="nav-item btn btn-outline-primary" href="{% url 'users:login' %}">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Войти</a>
+        <a class="nav-item btn btn-primary" href="{% url 'users:register' %}">
+            <i class="bi bi-person-plus me-2"></i>Регистрация</a>
+        {% endif %}
     </nav>
 </div>

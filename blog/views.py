@@ -1,5 +1,7 @@
 """Представления (views) приложения blog."""
 
+import smtplib
+
 from django.conf import settings
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -46,8 +48,7 @@ class BlogPostDetailView(DetailView):
         """
 
         # Получаем email из MAILERS
-        mail_config = settings.MAILERS["default"]
-        default_from_email = mail_config.get("DEFAULT_FROM_EMAIL", "admin@example.com")
+        default_from_email = settings.DEFAULT_FROM_EMAIL
         recipient_email = default_from_email  # отправляем себе
 
         try:
@@ -59,7 +60,7 @@ class BlogPostDetailView(DetailView):
                 fail_silently=False,
             )
             print("Письмо успешно отправлено")
-        except Exception as e:
+        except (smtplib.SMTPException, OSError) as e:
             print(f"Ошибка отправки email: {e}")
 
 
