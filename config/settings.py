@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "catalog",
     "blog",
+    "users",
+    "phonenumber_field",
 ]
 
 MIDDLEWARE = [
@@ -118,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
+AUTH_USER_MODEL = "users.CustomUser"
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
@@ -161,3 +163,9 @@ MAILERS = {
 }
 
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
+
+PHONENUMBER_DEFAULT_REGION = "RU"
+
+LOGIN_URL = ""
+LOGIN_REDIRECT_URL = ""
+LOGOUT_REDIRECT_URL = ""
