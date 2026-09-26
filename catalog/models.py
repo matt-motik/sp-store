@@ -46,6 +46,7 @@ class Product(models.Model):
         image (ImageField): Изображение товара (необязательное поле)
         category (ForeignKey): Связь с моделью Category
         price (Decimal): Цена за покупку (максимум 10 цифр, 2 знака после запятой)
+        in_stock (bool): Есть в наличии
         created_at (datetime): Дата и время создания записи
         updated_at (datetime): Дата и время последнего обновления записи
     """
@@ -55,6 +56,7 @@ class Product(models.Model):
     image = models.ImageField(upload_to="products/", null=True, blank=True, verbose_name="Изображение")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="products", verbose_name="Категория")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена за покупку")
+    in_stock = models.BooleanField(default=False, verbose_name="Есть в наличии")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата последнего изменения")
 

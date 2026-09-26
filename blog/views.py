@@ -93,7 +93,7 @@ class BlogPostCreateView(CreateView):
     model = BlogPost
     form_class: type[BlogPostForm] = BlogPostForm
 
-    def get_success_url(self) -> str | Promise:
+    def get_success_url(self) -> Promise:
         """
         Возвращает URL для перенаправления после успешного создания.
 

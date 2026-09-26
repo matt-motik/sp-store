@@ -80,7 +80,7 @@ class ProductCreateView(CreateView):
     # fields = ["name", "description", "image", "category", "price" ]
     # template_name = "catalog/product_form.html"
 
-    def get_success_url(self) -> str | Promise:
+    def get_success_url(self) -> Promise:
         """
         Возвращает URL для перенаправления после успешного создания.
 
@@ -110,7 +110,7 @@ class CategoryCreateView(CreateView):
     model = Category
     form_class: type[CategoryForm] = CategoryForm
 
-    def get_success_url(self) -> str | Promise:
+    def get_success_url(self) -> Promise:
         """
         Возвращает URL для перенаправления после успешного создания.
 

@@ -1,14 +1,38 @@
 """Модуль форм."""
 
-import os
+from typing import Any
 
 from django import forms
 from django.core.files.uploadedfile import UploadedFile
 
 from catalog.models import Category, Product
+from config.mixins import BootstrapStyleMixin
+from config.validators import validate_image_file
+
+EXCLUDE_WORDS = ["казино", "криптовалюта", "крипта", "биржа", "дешево", "бесплатно", "обман", "полиция", "радар"]
 
 
-class CategoryForm(forms.ModelForm):
+def _check_banned_words(value: str, field_name: str) -> str:
+    """Проверяет строку на запрещённые слова.
+
+    Args:
+        value: Проверяемое значение.
+        field_name: Имя поля для текста ошибки.
+
+    Returns:
+        str: Исходное значение, если проверка пройдена.
+
+    Raises:
+        forms.ValidationError: Если найдено запрещённое слово.
+    """
+    lowered = (value or "").lower()
+    banned = next((w for w in EXCLUDE_WORDS if w in lowered), None)
+    if banned:
+        raise forms.ValidationError(f'{field_name} не должно содержать слово "{banned}".')
+    return value
+
+
+class CategoryForm(BootstrapStyleMixin, forms.ModelForm):
     """Форма для создания и редактирования категории."""
 
     class Meta:
@@ -26,13 +50,11 @@ class CategoryForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(
                 attrs={
-                    "class": "form-control",
                     "placeholder": "Введите название категории",
                 }
             ),
             "description": forms.Textarea(
                 attrs={
-                    "class": "form-control",
                     "rows": 4,
                     "placeholder": "Введите описание категории",
                 }
@@ -40,19 +62,13 @@ class CategoryForm(forms.ModelForm):
         }
 
 
-class ProductForm(forms.ModelForm):
+class ProductForm(BootstrapStyleMixin, forms.ModelForm):
     """Форма для создания и редактирования товара."""
 
-    category = forms.ModelChoiceField(
-        queryset=Category.objects.all(),
-        empty_label="Выберите категорию",  # Это работает как плейсхолдер
-        widget=forms.Select(
-            attrs={
-                "class": "form-select",
-                "aria-describedby": "categoryHelp",
-            }
-        ),
-    )
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Обновляет queryset категорий при инициализации формы."""
+        super().__init__(*args, **kwargs)
+        self.fields["category"].queryset = Category.objects.all()
 
     class Meta:
         """
@@ -65,24 +81,21 @@ class ProductForm(forms.ModelForm):
         """
 
         model = Product
-        fields = ["name", "description", "image", "category", "price"]
+        fields = ["name", "description", "image", "category", "price", "in_stock"]
         widgets = {
             "name": forms.TextInput(
                 attrs={
-                    "class": "form-control",
                     "placeholder": "Введите название товара",
                 }
             ),
             "description": forms.Textarea(
                 attrs={
-                    "class": "form-control",
                     "rows": 4,
                     "placeholder": "Введите описание товара",
                 }
             ),
             "price": forms.NumberInput(
                 attrs={
-                    "class": "form-control",
                     "step": "0.01",
                     "placeholder": "0.00",
                     "min": "0",
@@ -90,8 +103,12 @@ class ProductForm(forms.ModelForm):
             ),
             "image": forms.FileInput(
                 attrs={
-                    "class": "form-control",
-                    "accept": "image/*",
+                    "accept": "image/jpeg,image/jpg,image/png,image/webp",
+                }
+            ),
+            "category": forms.Select(
+                attrs={
+                    "aria-describedby": "categoryHelp",
                 }
             ),
         }
@@ -109,11 +126,13 @@ class ProductForm(forms.ModelForm):
         """Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP."""
         image = self.cleaned_data.get("image")
         if image:
-            if image.size > 0.5 * 1024 * 1024:
-                raise forms.ValidationError("Изображение не должно превышать 0.5MB")
-
-            valid_extensions = [".jpg", ".jpeg", ".png", ".webp"]
-            ext = os.path.splitext(image.name)[1].lower()
-            if ext not in valid_extensions:
-                raise forms.ValidationError("Поддерживаются только JPG, PNG, WEBP")
+            validate_image_file(image)
         return image
+
+    def clean_name(self) -> str:
+        """Проверяет, что имя не содержит запрещённые слова."""
+        return _check_banned_words(self.cleaned_data.get("name"), "Имя")
+
+    def clean_description(self) -> str:
+        """Проверяет, что описание не содержит запрещённые слова."""
+        return _check_banned_words(self.cleaned_data.get("description"), "Описание")

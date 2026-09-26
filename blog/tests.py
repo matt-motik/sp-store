@@ -1,1 +1,4 @@
-"""Тесты приложения blog."""  # Create your tests here.
+"""Тесты приложения blog."""
+
+
+# Create your tests here.
