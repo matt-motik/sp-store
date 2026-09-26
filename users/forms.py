@@ -1,7 +1,11 @@
 """Формы приложения users."""
 
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordChangeForm,
+    UserCreationForm,
+)
 from django.core.exceptions import ValidationError
 from phonenumber_field.widgets import RegionalPhoneNumberWidget
 
@@ -66,7 +70,7 @@ class CustomUserCreationForm(BootstrapStyleMixin, UserCreationForm):
         Raises:
             ValidationError: Если пользователь с таким email уже существует.
         """
-        email = self.cleaned_data.get("email", "").lower()
+        email: str = self.cleaned_data.get("email", "").lower()
         if CustomUser.objects.filter(email=email).exists():
             raise ValidationError("Пользователь с таким email уже зарегистрирован.")
         return email
@@ -76,8 +80,7 @@ class CustomAuthenticationForm(BootstrapStyleMixin, AuthenticationForm):
     """Форма авторизации по email и паролю.
 
     Переопределяет стандартную AuthenticationForm: поле username
-    переименовано в email, добавлено понятное сообщение для неактивного
-    пользователя (который ещё не подтвердил email).
+    переименовано в email для отображения в шаблоне.
     """
 
     username = forms.EmailField(
@@ -90,3 +93,65 @@ class CustomAuthenticationForm(BootstrapStyleMixin, AuthenticationForm):
             }
         ),
     )
+
+
+class CustomUserChangeForm(BootstrapStyleMixin, forms.ModelForm):
+    """Форма редактирования профиля пользователя.
+
+    Позволяет изменить имя, фамилию, телефон, страну и аватар.
+    Email и пароль через эту форму не редактируются.
+
+    Attributes:
+        Meta: Внутренний класс с настройками формы.
+    """
+
+    class Meta:
+        """
+        Внутренний класс с настройками формы.
+
+        Attributes:
+            model (Model): Модель, с которой связана форма.
+            fields (tuple): Список полей, доступных для редактирования.
+            widgets (dict): Словарь с настройками виджетов для полей.
+        """
+
+        model = CustomUser
+        fields = ("first_name", "last_name", "phone_number", "country", "avatar")
+        widgets = {
+            "first_name": forms.TextInput(
+                attrs={
+                    "placeholder": "Иван",
+                    "autocomplete": "given-name",
+                }
+            ),
+            "last_name": forms.TextInput(
+                attrs={
+                    "placeholder": "Иванов",
+                    "autocomplete": "family-name",
+                }
+            ),
+            "phone_number": RegionalPhoneNumberWidget(
+                attrs={
+                    "autocomplete": "tel",
+                }
+            ),
+            "country": forms.TextInput(
+                attrs={
+                    "placeholder": "Россия",
+                    "autocomplete": "country-name",
+                }
+            ),
+            "avatar": forms.FileInput(
+                attrs={
+                    "accept": "image/jpeg,image/jpg,image/png,image/webp",
+                }
+            ),
+        }
+
+
+class CustomPasswordChangeForm(BootstrapStyleMixin, PasswordChangeForm):
+    """Форма смены пароля с Bootstrap-стилями.
+
+    Наследуется от стандартной PasswordChangeForm, которая уже содержит
+    поля old_password, new_password1 и new_password2 с валидацией.
+    """

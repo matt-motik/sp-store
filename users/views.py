@@ -1,21 +1,29 @@
 """Представления (views) приложения users."""
 
 import smtplib
+from typing import cast
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.core.mail import send_mail
+from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
-from django.views.generic import FormView
+from django.views.generic import DetailView, FormView, UpdateView
 
-from users.forms import CustomAuthenticationForm, CustomUserCreationForm
+from users.forms import (
+    CustomAuthenticationForm,
+    CustomPasswordChangeForm,
+    CustomUserChangeForm,
+    CustomUserCreationForm,
+)
 from users.models import CustomUser
 
 
@@ -147,7 +155,8 @@ class ActivateView(View):
         """
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
-            return CustomUser.objects.get(pk=uid)
+            user: CustomUser = CustomUser.objects.get(pk=uid)
+            return user
         except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
             return None
 
@@ -168,3 +177,88 @@ class CustomLogoutView(LogoutView):
     """Выход пользователя из системы."""
 
     next_page = reverse_lazy("users:login")
+
+
+class ProfileDetailView(LoginRequiredMixin, DetailView):
+    """Просмотр профиля текущего пользователя.
+
+    Доступно только авторизованным. Показывает данные пользователя
+    и кнопки перехода к редактированию и смене пароля.
+    """
+
+    model: type[CustomUser] = CustomUser
+    template_name = "users/profile.html"
+    context_object_name = "profile_user"
+
+    def get_object(self, queryset: QuerySet[CustomUser] | None = None) -> CustomUser:
+        """Возвращает текущего пользователя.
+
+        Args:
+            queryset: Не используется, оставлен для совместимости с DetailView.
+
+        Returns:
+            CustomUser: Текущий авторизованный пользователь.
+        """
+        return cast(CustomUser, self.request.user)
+
+
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    """Редактирование профиля текущего пользователя.
+
+    Доступно только авторизованным. После сохранения возвращает на
+    страницу просмотра профиля и выводит сообщение об успехе.
+    """
+
+    model: type[CustomUser] = CustomUser
+    form_class: type[CustomUserChangeForm] = CustomUserChangeForm
+    template_name = "users/profile_form.html"
+    success_url: str = reverse_lazy("users:profile")
+
+    def get_object(self, queryset: QuerySet[CustomUser] | None = None) -> CustomUser:
+        """Возвращает текущего пользователя.
+
+        Args:
+            queryset: Не используется, оставлен для совместимости с UpdateView.
+
+        Returns:
+            CustomUser: Текущий авторизованный пользователь.
+        """
+        return cast(CustomUser, self.request.user)
+
+    def form_valid(self, form: CustomUserChangeForm) -> HttpResponse:
+        """Сохраняет профиль и добавляет сообщение об успехе.
+
+        Args:
+            form: Валидная форма редактирования профиля.
+
+        Returns:
+            HttpResponse: Ответ после успешного сохранения.
+        """
+        response = super().form_valid(form)
+        messages.success(self.request, "Профиль успешно обновлён!", extra_tags="users")
+        return response
+
+
+class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+    """Смена пароля текущего пользователя.
+
+    Доступно только авторизованным. После успешной смены пароля
+    возвращает на страницу профиля и выводит сообщение об успехе.
+    """
+
+    form_class: type[CustomPasswordChangeForm] = CustomPasswordChangeForm
+    template_name = "users/password_change.html"
+    success_url: str = reverse_lazy("users:profile")
+
+    def form_valid(self, form: CustomPasswordChangeForm) -> HttpResponse:
+        """Сохраняет новый пароль и добавляет сообщение об успехе.
+
+        Args:
+            form: Валидная форма смены пароля.
+
+        Returns:
+            HttpResponse: Ответ после успешного сохранения.
+        """
+        response = super().form_valid(form)
+        messages.success(self.request, "Пароль успешно изменён!", extra_tags="users")
+        return response

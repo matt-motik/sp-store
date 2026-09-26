@@ -7,6 +7,9 @@ from .views import (
     ActivationSentView,
     CustomLoginView,
     CustomLogoutView,
+    CustomPasswordChangeView,
+    ProfileDetailView,
+    ProfileUpdateView,
     RegisterView,
 )
 
@@ -18,4 +21,7 @@ urlpatterns = [
     path("activate/<uidb64>/<token>/", ActivateView.as_view(), name="activate"),
     path("login/", CustomLoginView.as_view(), name="login"),
     path("logout/", CustomLogoutView.as_view(), name="logout"),
+    path("profile/", ProfileDetailView.as_view(), name="profile"),
+    path("profile/edit/", ProfileUpdateView.as_view(), name="profile_edit"),
+    path("password/change/", CustomPasswordChangeView.as_view(), name="password_change"),
 ]

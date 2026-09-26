@@ -1,7 +1,10 @@
 """Настройки административной панели приложения users."""
 
+from typing import Any
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.http import HttpRequest
 
 from users.models import CustomUser
 
@@ -84,7 +87,11 @@ class CustomUserAdmin(BaseUserAdmin):
         ),
     )
 
-    def get_fieldsets(self, request, obj=None):
+    def get_fieldsets(
+        self,
+        request: HttpRequest,
+        obj: CustomUser | None = None,
+    ) -> tuple[Any, ...]:
         """Возвращает fieldsets в зависимости от режима (создание/редактирование).
 
         Args:
@@ -96,4 +103,5 @@ class CustomUserAdmin(BaseUserAdmin):
         """
         if obj is None:
             return self.add_fieldsets
-        return super().get_fieldsets(request, obj)
+        fieldsets: tuple[Any, ...] = super().get_fieldsets(request, obj)
+        return fieldsets
