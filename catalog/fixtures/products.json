@@ -1,44 +1,362 @@
 [
 {
   "model": "catalog.product",
-  "pk": 3,
+  "pk": 11,
   "fields": {
-    "name": "iPhone 15",
-    "description": "Флагманский смартфон",
+    "name": "Смартфон Galaxy A54",
+    "description": "Описание товара: Смартфон Galaxy A54.",
     "image": "",
-    "category": 3,
-    "price": "1000.00",
+    "category": 7,
+    "price": "32990.00",
+    "in_stock": true,
     "is_published": true,
-    "created_at": "2026-08-22T19:36:11.904Z",
-    "updated_at": "2026-08-22T19:36:11.904Z"
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.317Z",
+    "updated_at": "2026-09-27T17:47:43.317Z"
   }
 },
 {
   "model": "catalog.product",
-  "pk": 4,
+  "pk": 12,
   "fields": {
-    "name": "MacBook Pro",
-    "description": "Флагманский ноут",
+    "name": "Ноутбук Lenovo IdeaPad",
+    "description": "Описание товара: Ноутбук Lenovo IdeaPad.",
     "image": "",
-    "category": 3,
-    "price": "2000.00",
+    "category": 7,
+    "price": "54990.00",
+    "in_stock": true,
     "is_published": true,
-    "created_at": "2026-08-22T19:37:14.133Z",
-    "updated_at": "2026-08-22T19:37:14.133Z"
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.323Z",
+    "updated_at": "2026-09-27T17:47:43.323Z"
   }
 },
 {
   "model": "catalog.product",
-  "pk": 5,
+  "pk": 13,
   "fields": {
-    "name": "Война и мир",
-    "description": "Лев Толстой. Роман",
+    "name": "Наушники Sony WH-1000XM5",
+    "description": "Описание товара: Наушники Sony WH-1000XM5.",
     "image": "",
-    "category": 4,
-    "price": "20.00",
+    "category": 7,
+    "price": "27990.00",
+    "in_stock": true,
     "is_published": true,
-    "created_at": "2026-08-22T19:38:16.844Z",
-    "updated_at": "2026-08-22T19:38:16.844Z"
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.330Z",
+    "updated_at": "2026-09-27T17:47:43.330Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 14,
+  "fields": {
+    "name": "Умные часы Galaxy Watch 6",
+    "description": "Описание товара: Умные часы Galaxy Watch 6.",
+    "image": "",
+    "category": 7,
+    "price": "21990.00",
+    "in_stock": false,
+    "is_published": true,
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.339Z",
+    "updated_at": "2026-09-27T17:47:43.339Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 15,
+  "fields": {
+    "name": "Powerbank Xiaomi 20000 мАч",
+    "description": "Описание товара: Powerbank Xiaomi 20000 мАч.",
+    "image": "",
+    "category": 7,
+    "price": "2490.00",
+    "in_stock": true,
+    "is_published": false,
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.348Z",
+    "updated_at": "2026-09-27T17:47:43.348Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 16,
+  "fields": {
+    "name": "Ерш для унитаза (черновик)",
+    "description": "Описание товара: Ерш для унитаза (черновик).",
+    "image": "",
+    "category": 10,
+    "price": "890.00",
+    "in_stock": true,
+    "is_published": false,
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.355Z",
+    "updated_at": "2026-09-27T17:47:43.355Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 17,
+  "fields": {
+    "name": "Python. Изобилие алгоритмов",
+    "description": "Описание товара: Python. Изобилие алгоритмов.",
+    "image": "",
+    "category": 8,
+    "price": "2190.00",
+    "in_stock": true,
+    "is_published": true,
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.361Z",
+    "updated_at": "2026-09-27T17:47:43.361Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 18,
+  "fields": {
+    "name": "Чистый код",
+    "description": "Описание товара: Чистый код.",
+    "image": "",
+    "category": 8,
+    "price": "1890.00",
+    "in_stock": true,
+    "is_published": true,
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.368Z",
+    "updated_at": "2026-09-27T17:47:43.368Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 19,
+  "fields": {
+    "name": "Мастер и Маргарита",
+    "description": "Описание товара: Мастер и Маргарита.",
+    "image": "",
+    "category": 8,
+    "price": "490.00",
+    "in_stock": true,
+    "is_published": true,
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.375Z",
+    "updated_at": "2026-09-27T17:47:43.375Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 20,
+  "fields": {
+    "name": "Django для профессионалов",
+    "description": "Описание товара: Django для профессионалов.",
+    "image": "",
+    "category": 8,
+    "price": "3490.00",
+    "in_stock": false,
+    "is_published": true,
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.380Z",
+    "updated_at": "2026-09-27T17:47:43.380Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 21,
+  "fields": {
+    "name": "Джинсовая куртка",
+    "description": "Описание товара: Джинсовая куртка.",
+    "image": "",
+    "category": 9,
+    "price": "6490.00",
+    "in_stock": true,
+    "is_published": true,
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.388Z",
+    "updated_at": "2026-09-27T17:47:43.388Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 22,
+  "fields": {
+    "name": "Кроссовки New Balance 530",
+    "description": "Описание товара: Кроссовки New Balance 530.",
+    "image": "",
+    "category": 9,
+    "price": "8990.00",
+    "in_stock": true,
+    "is_published": true,
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.396Z",
+    "updated_at": "2026-09-27T17:47:43.396Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 23,
+  "fields": {
+    "name": "Кожаный ремень (черновик)",
+    "description": "Описание товара: Кожаный ремень (черновик).",
+    "image": "",
+    "category": 9,
+    "price": "1990.00",
+    "in_stock": true,
+    "is_published": false,
+    "owner": [
+      "author@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.403Z",
+    "updated_at": "2026-09-27T17:47:43.403Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 24,
+  "fields": {
+    "name": "Кофемолка Bosch",
+    "description": "Описание товара: Кофемолка Bosch.",
+    "image": "",
+    "category": 10,
+    "price": "5490.00",
+    "in_stock": true,
+    "is_published": true,
+    "owner": [
+      "moderator@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.409Z",
+    "updated_at": "2026-09-27T17:47:43.409Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 25,
+  "fields": {
+    "name": "Настольная лампа Artemide",
+    "description": "Описание товара: Настольная лампа Artemide.",
+    "image": "",
+    "category": 10,
+    "price": "4290.00",
+    "in_stock": true,
+    "is_published": true,
+    "owner": [
+      "moderator@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.414Z",
+    "updated_at": "2026-09-27T17:47:43.414Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 26,
+  "fields": {
+    "name": "Сковорода Tefal",
+    "description": "Описание товара: Сковорода Tefal.",
+    "image": "",
+    "category": 10,
+    "price": "3690.00",
+    "in_stock": true,
+    "is_published": true,
+    "owner": [
+      "moderator@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.421Z",
+    "updated_at": "2026-09-27T17:47:43.421Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 27,
+  "fields": {
+    "name": "Комнатные тапочки (черновик)",
+    "description": "Описание товара: Комнатные тапочки (черновик).",
+    "image": "",
+    "category": 10,
+    "price": "1290.00",
+    "in_stock": true,
+    "is_published": false,
+    "owner": [
+      "moderator@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.428Z",
+    "updated_at": "2026-09-27T17:47:43.428Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 28,
+  "fields": {
+    "name": "Кроссовки Asics Gel-Kayano",
+    "description": "Описание товара: Кроссовки Asics Gel-Kayano.",
+    "image": "",
+    "category": 11,
+    "price": "11990.00",
+    "in_stock": true,
+    "is_published": true,
+    "owner": [
+      "moderator@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.434Z",
+    "updated_at": "2026-09-27T17:47:43.434Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 29,
+  "fields": {
+    "name": "Гантель разборная 16 кг",
+    "description": "Описание товара: Гантель разборная 16 кг.",
+    "image": "",
+    "category": 11,
+    "price": "7490.00",
+    "in_stock": true,
+    "is_published": true,
+    "owner": [
+      "moderator@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.440Z",
+    "updated_at": "2026-09-27T17:47:43.440Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 30,
+  "fields": {
+    "name": "Коврик для йоги",
+    "description": "Описание товара: Коврик для йоги.",
+    "image": "",
+    "category": 11,
+    "price": "1690.00",
+    "in_stock": false,
+    "is_published": true,
+    "owner": [
+      "moderator@example.com"
+    ],
+    "created_at": "2026-09-27T17:47:43.448Z",
+    "updated_at": "2026-09-27T17:47:43.448Z"
   }
 }
 ]
