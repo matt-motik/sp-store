@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "catalog",
     "blog",
+    "users",
+    "phonenumber_field",
 ]
 
 MIDDLEWARE = [
@@ -118,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
+AUTH_USER_MODEL = "users.CustomUser"
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
@@ -156,8 +158,17 @@ MAILERS = {
             "username": env("EMAIL_HOST_USER"),
             "password": env("EMAIL_HOST_PASSWORD"),
         },
-        "DEFAULT_FROM_EMAIL": env("DEFAULT_FROM_EMAIL", default=env("EMAIL_HOST_USER")),
     },
 }
 
+DEFAULT_FROM_EMAIL = env("EMAIL_HOST_USER")
+
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
+
+PHONENUMBER_DEFAULT_REGION = "RU"
+
+LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "catalog:product_list"
+LOGOUT_REDIRECT_URL = "users:login"
+
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 24 часа

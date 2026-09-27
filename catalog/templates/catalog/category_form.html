@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
-{% block title %}Добавить категорию{% endblock %}
-{% block header %}Добавление категории{% endblock %}
+{% block title %}{% if form.instance.pk %}Редактировать{% else %}Добавить{% endif %} категорию{% endblock %}
+{% block header %}{% if form.instance.pk %}Редактирование{% else %}Добавление{% endif %} категории{% endblock %}
 {% block description %}{% endblock %}
 
 {% block content %}
@@ -9,7 +9,19 @@
     <div class="col-md-8 col-lg-6">
         <div class="card">
             <div class="card-body">
-                <form method="post" >
+
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.extra_tags == 'category' %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="{{ form.name.id_for_label }}" class="form-label">Название</label>
@@ -26,7 +38,8 @@
                         {% endif %}
                     </div>
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-plus-circle"></i> Добавить категорию
+                        <i class="bi bi-{% if form.instance.pk %}save{% else %}plus-circle{% endif %}"></i>
+                        {% if form.instance.pk %}Сохранить{% else %}Добавить категорию{% endif %}
                     </button>
                 </form>
             </div>

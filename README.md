@@ -13,15 +13,28 @@
 - **Главная страница** с отображением последних 8 товаров
 - **Детальная страница товара** с полной информацией
 - **Добавление товаров** через форму с валидацией
+- **Редактирование товаров** через форму с валидацией
+- **Удаление товаров** с подтверждением
 - **Добавление категорий** через форму
+- **Редактирование категорий** через форму
+- **Удаление категорий** с подтверждением
+- **Список категорий** с количеством товаров в каждой
+- **Фильтрация товаров по категории**
 - **Страница контактов** с формой обратной связи
 - **Загрузка изображений** с валидацией (размер до 0.5MB, форматы JPG/PNG/WEBP)
 - **Адаптивная вёрстка** с Bootstrap 5
-- **Админ-панель** для управления товарами, категориями и контактами
+- **Админ-панель** для управления товарами, категориями, контактами и пользователями
 - **Блог** с публикацией, редактированием и удалением записей
 - **Счётчик просмотров** с атомарным обновлением через `F()`
 - **Пагинация в блоге** (по 8 записей)
 - **Отправка email** при достижении 100 просмотров
+- **Регистрация пользователей** с подтверждением пароля
+- **Активация аккаунта** по email через токен
+- **Авторизация** по email и паролю
+- **Выход из системы** через POST-форму
+- **Просмотр и редактирование профиля** пользователя
+- **Смена пароля** пользователя
+- **Защита CRUD операций** от анонимных пользователей
 
 ## 📋 Содержание
 
@@ -109,13 +122,25 @@ http://127.0.0.1:8000/
 | `/` | Главная страница (каталог) |
 | `/products/<id>/` | Детали товара |
 | `/products/add/` | Добавление товара |
+| `/products/<id>/edit/` | Редактирование товара |
+| `/products/<id>/delete/` | Удаление товара |
+| `/categories/` | Список категорий |
 | `/category/add/` | Добавление категории |
+| `/category/<id>/edit/` | Редактирование категории |
+| `/category/<id>/delete/` | Удаление категории |
 | `/contacts/` | Контакты |
 | `/blogs/` | Список записей блога |
 | `/blogs/create/` | Создание записи |
 | `/blogs/<id>/` | Детали записи |
 | `/blogs/<id>/edit/` | Редактирование записи |
 | `/blogs/<id>/delete/` | Удаление записи |
+| `/users/register/` | Регистрация |
+| `/users/login/` | Вход |
+| `/users/logout/` | Выход |
+| `/users/activate/<uidb64>/<token>/` | Активация аккаунта по email |
+| `/users/profile/` | Просмотр профиля |
+| `/users/profile/edit/` | Редактирование профиля |
+| `/users/password/change/` | Смена пароля |
 
 ## 📦 Управление данными
 
@@ -135,7 +160,7 @@ uv run python manage.py createsuperuser
 ```
 Админка доступна по адресу: /admin
 
-Зарегистрированные модели: Category, Product, Contact, BlogPost
+Зарегистрированные модели: Category, Product, Contact, BlogPost, CustomUser
 
 <div id="разработка"></div>
 
@@ -188,7 +213,9 @@ sp-store/
 │   ├── templates/
 │   │   └── catalog/
 │   │       ├── category_form.html
+│   │       ├── category_list.html
 │   │       ├── contacts.html
+│   │       ├── product_confirm_delete.html
 │   │       ├── product_detail.html
 │   │       ├── product_form.html
 │   │       └── product_list.html
@@ -231,6 +258,35 @@ sp-store/
 │   │   ├── footer.html
 │   │   └── navbar.html
 │   └── base.html
+├── users/
+│   ├── management/
+│   │   ├── commands/
+│   │   │   ├── __init__.py
+│   │   │   └── addsu.py
+│   │   └── __init__.py
+│   ├── migrations/
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_alter_customuser_managers.py
+│   │   └── __init__.py
+│   ├── templates/
+│   │   └── users/
+│   │       ├── activation_invalid.html
+│   │       ├── activation_sent.html
+│   │       ├── logged_out.html
+│   │       ├── login.html
+│   │       ├── password_change.html
+│   │       ├── profile.html
+│   │       ├── profile_form.html
+│   │       └── register.html
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── managers.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
 ├── manage.py
 ├── pyproject.toml
 ├── README.md
@@ -251,16 +307,16 @@ sp-store/
 
 ```bash
 # Линтинг
-uv run ruff check catalog/ blog/ config/
+uv run ruff check catalog/ blog/ config/ users/
 
 # Автоисправление ошибок
-uv run ruff check --fix catalog/ blog/ config/
+uv run ruff check --fix catalog/ blog/ config/ users/
 
 # Форматирование
-uv run ruff format catalog/ blog/ config/
+uv run ruff format catalog/ blog/ config/ users/
 
 # Проверка типов
-uv run mypy catalog/ blog/ config/
+uv run mypy catalog/ blog/ config/ users/
 ```
 ### Pre-commit hooks
 ```bash
@@ -279,14 +335,24 @@ uv run pre-commit run --all-files
 
 | Модуль | Функция/Класс | Краткое описание |
 |--------|---------------|------------------|
+| [**`addsu.py`**](docs/api/addsu.md) | | |
+| | [📦 Command](docs/api/addsu.md#Command) | Создаёт суперпользователя с указанными email и паролем. |
+| | [⚙️ Command.add_arguments](docs/api/addsu.md#Command.add_arguments) | Добавляет аргументы командной строки. |
+| | [⚙️ Command.handle](docs/api/addsu.md#Command.handle) | Создаёт или обновляет суперпользователя. |
+| | [🔧 add_arguments](docs/api/addsu.md#add_arguments) | Добавляет аргументы командной строки. |
+| | [🔧 handle](docs/api/addsu.md#handle) | Создаёт или обновляет суперпользователя. |
 | [**`admin.py`**](docs/api/admin.md) | | |
 | | [📦 CategoryAdmin](docs/api/admin.md#CategoryAdmin) | Настройки административной панели Категорий. |
 | | [📦 ProductAdmin](docs/api/admin.md#ProductAdmin) | Настройки административной панели Продуктов. |
 | | [📦 ContactAdmin](docs/api/admin.md#ContactAdmin) | Настройки административной панели Контактов. |
 | | [📦 BlogPostAdmin](docs/api/admin.md#BlogPostAdmin) | Настройки административной панели записи блога. |
+| | [📦 CustomUserAdmin](docs/api/admin.md#CustomUserAdmin) | Настройки административной панели для модели CustomUser. |
+| | [⚙️ CustomUserAdmin.get_fieldsets](docs/api/admin.md#CustomUserAdmin.get_fieldsets) | Возвращает fieldsets в зависимости от режима (создание/редактирование). |
+| | [🔧 get_fieldsets](docs/api/admin.md#get_fieldsets) | Возвращает fieldsets в зависимости от режима (создание/редактирование). |
 | [**`apps.py`**](docs/api/apps.md) | | |
 | | [📦 CatalogConfig](docs/api/apps.md#CatalogConfig) | Конфигурация приложения каталога. |
 | | [📦 BlogConfig](docs/api/apps.md#BlogConfig) | Конфигурация приложения блога. |
+| | [📦 UsersConfig](docs/api/apps.md#UsersConfig) | Конфигурация приложения users. |
 | [**`dell_all.py`**](docs/api/dell_all.md) | | |
 | | [📦 Command](docs/api/dell_all.md#Command) | Команда удаления. |
 | | [⚙️ Command.handle](docs/api/dell_all.md#Command.handle) | Хенндл. |
@@ -308,8 +374,22 @@ uv run pre-commit run --all-files
 | | [⚙️ BlogPostForm.clean_preview](docs/api/forms.md#BlogPostForm.clean_preview) | Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP. |
 | | [📦 Meta](docs/api/forms.md#Meta) | Внутренний класс с настройками формы. |
 | | [🔧 clean_preview](docs/api/forms.md#clean_preview) | Проверяет, что размер изображение не больше 0.5MB. И тип JPG, PNG, WEBP. |
+| | [📦 CustomUserCreationForm](docs/api/forms.md#CustomUserCreationForm) | Форма регистрации нового пользователя. |
+| | [⚙️ CustomUserCreationForm.clean_email](docs/api/forms.md#CustomUserCreationForm.clean_email) | Проверяет, что email ещё не занят. |
+| | [📦 CustomAuthenticationForm](docs/api/forms.md#CustomAuthenticationForm) | Форма авторизации по email и паролю. |
+| | [📦 CustomUserChangeForm](docs/api/forms.md#CustomUserChangeForm) | Форма редактирования профиля пользователя. |
+| | [📦 CustomPasswordChangeForm](docs/api/forms.md#CustomPasswordChangeForm) | Форма смены пароля с Bootstrap-стилями. |
+| | [📦 Meta](docs/api/forms.md#Meta) | Внутренний класс с настройками формы. |
+| | [🔧 clean_email](docs/api/forms.md#clean_email) | Проверяет, что email ещё не занят. |
+| | [📦 Meta](docs/api/forms.md#Meta) | Внутренний класс с настройками формы. |
 | [**`manage.py`**](docs/api/manage.md) | | |
 | | [🔧 main](docs/api/manage.md#main) | Run administrative tasks. |
+| [**`managers.py`**](docs/api/managers.md) | | |
+| | [📦 CustomUserManager](docs/api/managers.md#CustomUserManager) | Менеджер пользователей, использующий email вместо username. |
+| | [⚙️ CustomUserManager.create_user](docs/api/managers.md#CustomUserManager.create_user) | Создаёт и сохраняет обычного пользователя. |
+| | [⚙️ CustomUserManager.create_superuser](docs/api/managers.md#CustomUserManager.create_superuser) | Создаёт и сохраняет суперпользователя. |
+| | [🔧 create_user](docs/api/managers.md#create_user) | Создаёт и сохраняет обычного пользователя. |
+| | [🔧 create_superuser](docs/api/managers.md#create_superuser) | Создаёт и сохраняет суперпользователя. |
 | [**`mixins.py`**](docs/api/mixins.md) | | |
 | | [📦 BootstrapStyleMixin](docs/api/mixins.md#BootstrapStyleMixin) | Миксин для стилизации полей формы под Bootstrap. |
 | [**`models.py`**](docs/api/models.md) | | |
@@ -321,6 +401,8 @@ uv run pre-commit run --all-files
 | | [📦 Meta](docs/api/models.md#Meta) | Мета для админки. |
 | | [📦 BlogPost](docs/api/models.md#BlogPost) | Модель записи в блоге. |
 | | [📦 Meta](docs/api/models.md#Meta) | Мета-параметры модели BlogPost. |
+| | [📦 CustomUser](docs/api/models.md#CustomUser) | Кастомная модель пользователя. |
+| | [📦 Meta](docs/api/models.md#Meta) | Мета-параметры модели CustomUser. |
 | [**`seed_db.py`**](docs/api/seed_db.md) | | |
 | | [📦 Command](docs/api/seed_db.md#Command) | Команда засеивания базы тестовыми данными. |
 | | [⚙️ Command.handle](docs/api/seed_db.md#Command.handle) | Хенндл. |
@@ -329,7 +411,7 @@ uv run pre-commit run --all-files
 | | [🔧 validate_image_file](docs/api/validators.md#validate_image_file) | Проверяет размер и формат загружаемого изображения. |
 | [**`views.py`**](docs/api/views.md) | | |
 | | [📦 ProductListView](docs/api/views.md#ProductListView) | Представление для отображения списка товаров с пагинацией. |
-| | [⚙️ ProductListView.get_queryset](docs/api/views.md#ProductListView.get_queryset) | Возвращает отсортированный список товаров. |
+| | [⚙️ ProductListView.get_queryset](docs/api/views.md#ProductListView.get_queryset) | Возвращает список товаров, при необходимости отфильтрованный по категории. |
 | | [📦 ProductDetailView](docs/api/views.md#ProductDetailView) | Представление для отображения товара. |
 | | [📦 ContactsView](docs/api/views.md#ContactsView) | Отображает страницу контактов и обрабатывает форму обратной связи. |
 | | [⚙️ ContactsView.get](docs/api/views.md#ContactsView.get) | Получение данных о контакте для связи. |
@@ -340,13 +422,32 @@ uv run pre-commit run --all-files
 | | [📦 CategoryCreateView](docs/api/views.md#CategoryCreateView) | Представление для добавления категории. |
 | | [⚙️ CategoryCreateView.get_success_url](docs/api/views.md#CategoryCreateView.get_success_url) | Возвращает URL для перенаправления после успешного создания. |
 | | [⚙️ CategoryCreateView.form_valid](docs/api/views.md#CategoryCreateView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
-| | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает отсортированный список товаров. |
+| | [📦 ProductUpdateView](docs/api/views.md#ProductUpdateView) | Представление для редактирования товара. |
+| | [⚙️ ProductUpdateView.get_success_url](docs/api/views.md#ProductUpdateView.get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
+| | [⚙️ ProductUpdateView.form_valid](docs/api/views.md#ProductUpdateView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [📦 ProductDeleteView](docs/api/views.md#ProductDeleteView) | Представление для удаления товара. |
+| | [⚙️ ProductDeleteView.form_valid](docs/api/views.md#ProductDeleteView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [📦 CategoryUpdateView](docs/api/views.md#CategoryUpdateView) | Представление для редактирования категории. |
+| | [⚙️ CategoryUpdateView.get_success_url](docs/api/views.md#CategoryUpdateView.get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
+| | [⚙️ CategoryUpdateView.form_valid](docs/api/views.md#CategoryUpdateView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [📦 CategoryDeleteView](docs/api/views.md#CategoryDeleteView) | Представление для удаления категории. |
+| | [⚙️ CategoryDeleteView.form_valid](docs/api/views.md#CategoryDeleteView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [📦 CategoryListView](docs/api/views.md#CategoryListView) | Представление для отображения списка категорий. |
+| | [⚙️ CategoryListView.get_queryset](docs/api/views.md#CategoryListView.get_queryset) | Возвращает категории с подсчётом количества товаров. |
+| | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает список товаров, при необходимости отфильтрованный по категории. |
 | | [🔧 get](docs/api/views.md#get) | Получение данных о контакте для связи. |
 | | [🔧 post](docs/api/views.md#post) | Отправка обратной связи. |
 | | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного создания. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного создания. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
+| | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
+| | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает категории с подсчётом количества товаров. |
 | | [📦 BlogPostDetailView](docs/api/views.md#BlogPostDetailView) | Представление для отображения записи. |
 | | [⚙️ BlogPostDetailView.get_object](docs/api/views.md#BlogPostDetailView.get_object) | Переопредение данных записи, для увеличения счётчика просмотров. |
 | | [⚙️ BlogPostDetailView.send_congratulation_email](docs/api/views.md#BlogPostDetailView.send_congratulation_email) | Отправляет поздравление о достижении 100 просмотров. |
@@ -366,6 +467,30 @@ uv run pre-commit run --all-files
 | | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [📦 RegisterView](docs/api/views.md#RegisterView) | Регистрация нового пользователя. |
+| | [⚙️ RegisterView.form_valid](docs/api/views.md#RegisterView.form_valid) | Сохраняет пользователя и отправляет письмо с токеном активации. |
+| | [⚙️ RegisterView.send_activation_email](docs/api/views.md#RegisterView.send_activation_email) | Отправляет письмо со ссылкой активации. |
+| | [📦 ActivationSentView](docs/api/views.md#ActivationSentView) | Страница «проверьте почту» после регистрации. |
+| | [⚙️ ActivationSentView.get](docs/api/views.md#ActivationSentView.get) | Отображает страницу с инструкцией. |
+| | [📦 ActivateView](docs/api/views.md#ActivateView) | Активация аккаунта по ссылке из письма. |
+| | [⚙️ ActivateView.get](docs/api/views.md#ActivateView.get) | Обрабатывает переход по ссылке активации. |
+| | [📦 CustomLoginView](docs/api/views.md#CustomLoginView) | Авторизация пользователя по email и паролю. |
+| | [📦 CustomLogoutView](docs/api/views.md#CustomLogoutView) | Выход пользователя из системы. |
+| | [📦 ProfileDetailView](docs/api/views.md#ProfileDetailView) | Просмотр профиля текущего пользователя. |
+| | [⚙️ ProfileDetailView.get_object](docs/api/views.md#ProfileDetailView.get_object) | Возвращает текущего пользователя. |
+| | [📦 ProfileUpdateView](docs/api/views.md#ProfileUpdateView) | Редактирование профиля текущего пользователя. |
+| | [⚙️ ProfileUpdateView.get_object](docs/api/views.md#ProfileUpdateView.get_object) | Возвращает текущего пользователя. |
+| | [⚙️ ProfileUpdateView.form_valid](docs/api/views.md#ProfileUpdateView.form_valid) | Сохраняет профиль и добавляет сообщение об успехе. |
+| | [📦 CustomPasswordChangeView](docs/api/views.md#CustomPasswordChangeView) | Смена пароля текущего пользователя. |
+| | [⚙️ CustomPasswordChangeView.form_valid](docs/api/views.md#CustomPasswordChangeView.form_valid) | Сохраняет новый пароль и добавляет сообщение об успехе. |
+| | [🔧 form_valid](docs/api/views.md#form_valid) | Сохраняет пользователя и отправляет письмо с токеном активации. |
+| | [🔧 send_activation_email](docs/api/views.md#send_activation_email) | Отправляет письмо со ссылкой активации. |
+| | [🔧 get](docs/api/views.md#get) | Отображает страницу с инструкцией. |
+| | [🔧 get](docs/api/views.md#get) | Обрабатывает переход по ссылке активации. |
+| | [🔧 get_object](docs/api/views.md#get_object) | Возвращает текущего пользователя. |
+| | [🔧 get_object](docs/api/views.md#get_object) | Возвращает текущего пользователя. |
+| | [🔧 form_valid](docs/api/views.md#form_valid) | Сохраняет профиль и добавляет сообщение об успехе. |
+| | [🔧 form_valid](docs/api/views.md#form_valid) | Сохраняет новый пароль и добавляет сообщение об успехе. |
 
 > 📘 **Полная документация** с примерами и описанием параметров доступна в папке [`docs/api`](docs/api).
 </details>
@@ -424,6 +549,26 @@ uv run pre-commit run --all-files
 - [x] Счётчик просмотров с атомарным обновлением
 - [x] Отправка email при 100 просмотрах
 - [x] Настройка админки для BlogPost
+- [x] Приложение users с URL-роутингом
+- [x] Кастомная модель `CustomUser` на базе `AbstractUser` с email как `USERNAME_FIELD`
+- [x] Дополнительные поля пользователя: аватар, телефон, страна
+- [x] Кастомный менеджер `CustomUserManager` для создания пользователей по email
+- [x] Настройка админки для `CustomUser`
+- [x] Форма регистрации с подтверждением пароля и валидацией email
+- [x] Активация аккаунта по email через токен
+- [x] Отправка приветственного письма после регистрации
+- [x] Авторизация по email и паролю
+- [x] Выход из системы через POST-форму
+- [x] Закрытие CUD товаров и категорий для анонимных пользователей (`LoginRequiredMixin`)
+- [x] Страница списка категорий с количеством товаров
+- [x] Фильтрация товаров по категории
+- [x] Редактирование и удаление товаров
+- [x] Редактирование и удаление категорий
+- [x] Редактирование и удаление записей блога
+- [x] Dropdown-меню пользователя в навбаре
+- [x] Просмотр профиля пользователя
+- [x] Редактирование профиля пользователя
+- [x] Смена пароля
 - [x] Проверить линтеры (`ruff`, `mypy`)
 - [x] Финальная вычитка документации и обновление README
 - [x] Обновить документацию

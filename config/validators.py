@@ -26,5 +26,6 @@ def validate_image_file(image: UploadedFile) -> None:
     if ext not in ALLOWED_IMAGE_EXTENSIONS:
         raise ValidationError("Поддерживаются только JPG, PNG, WEBP")
 
-    if image.content_type not in ALLOWED_IMAGE_CONTENT_TYPES:
+    content_type = getattr(image, "content_type", None)
+    if content_type and content_type not in ALLOWED_IMAGE_CONTENT_TYPES:
         raise ValidationError("Поддерживаются только JPG, PNG, WEBP")
