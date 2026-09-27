@@ -13,8 +13,10 @@
         {% if user.is_authenticated %}
             <a class="nav-item btn btn-outline-primary" href="{% url 'catalog:add_product' %}">
                 <i class="bi bi-plus-circle me-2"></i>Добавить товар</a>
-            <a class="nav-item btn btn-outline-primary" href="{% url 'catalog:add_category' %}">
-                <i class="bi bi-plus-circle me-2"></i>Добавить категорию</a>
+            {% if perms.catalog.add_category %}
+                <a class="nav-item btn btn-outline-primary" href="{% url 'catalog:add_category' %}">
+                    <i class="bi bi-plus-circle me-2"></i>Добавить категорию</a>
+            {% endif %}
             {% if perms.blog.add_blogpost %}
                 <a class="nav-item btn btn-outline-primary" href="{% url 'blog:create' %}">
                     <i class="bi bi-plus-circle me-2"></i>Добавить запись</a>

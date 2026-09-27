@@ -19,7 +19,7 @@
             {% endfor %}
         {% endif %}
 
-        {% if user.is_authenticated %}
+        {% if perms.catalog.add_category %}
             <div class="mb-3 text-end">
                 <a href="{% url 'catalog:add_category' %}" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Добавить категорию
@@ -51,11 +51,13 @@
                                        class="btn btn-sm btn-outline-secondary">
                                         <i class="bi bi-box-seam"></i> Товары
                                     </a>
-                                    {% if user.is_authenticated %}
+                                    {% if perms.catalog.change_category %}
                                         <a href="{% url 'catalog:edit_category' category.pk %}"
                                            class="btn btn-sm btn-outline-warning">
                                             <i class="bi bi-pencil"></i>
                                         </a>
+                                    {% endif %}
+                                    {% if perms.catalog.delete_category %}
                                         <a href="{% url 'catalog:delete_category' category.pk %}"
                                            class="btn btn-sm btn-outline-danger">
                                             <i class="bi bi-trash"></i>

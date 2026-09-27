@@ -20,6 +20,9 @@ from catalog.models import Category, Contact, Product
 
 UNPUBLISH_PERMISSION = "catalog.can_unpublish_product"
 DELETE_PERMISSION = "catalog.delete_product"
+CATEGORY_ADD_PERMISSION = "catalog.add_category"
+CATEGORY_CHANGE_PERMISSION = "catalog.change_category"
+CATEGORY_DELETE_PERMISSION = "catalog.delete_category"
 
 
 class ProductListView(ListView):
@@ -142,15 +145,17 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
         return response
 
 
-class CategoryCreateView(LoginRequiredMixin, CreateView):
+class CategoryCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     """
     Представление для добавления категории.
 
+    Доступно только роли «Модератор продуктов» и суперпользователю.
     Добавляет категорию и выводит сообщение об успехе.
     """
 
-    model = Category
+    model: type[Category] = Category
     form_class: type[CategoryForm] = CategoryForm
+    permission_required = CATEGORY_ADD_PERMISSION
 
     def get_success_url(self) -> Promise:
         """
@@ -322,17 +327,18 @@ class ProductUnpublishView(LoginRequiredMixin, PermissionRequiredMixin, View):
         return redirect("catalog:product_detail", pk=product.pk)
 
 
-class CategoryUpdateView(LoginRequiredMixin, UpdateView):
+class CategoryUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     """
     Представление для редактирования категории.
 
-    Доступно только авторизованным пользователям. После успешного
-    редактирования перенаправляет на форму добавления товара и выводит
-    сообщение об успехе.
+    Доступно только роли «Модератор продуктов» и суперпользователю.
+    После успешного редактирования перенаправляет на форму добавления
+    товара и выводит сообщение об успехе.
     """
 
     model: type[Category] = Category
     form_class: type[CategoryForm] = CategoryForm
+    permission_required = CATEGORY_CHANGE_PERMISSION
 
     def get_success_url(self) -> str:
         """
@@ -362,17 +368,18 @@ class CategoryUpdateView(LoginRequiredMixin, UpdateView):
         return response
 
 
-class CategoryDeleteView(LoginRequiredMixin, DeleteView):
+class CategoryDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """
     Представление для удаления категории.
 
-    Доступно только авторизованным пользователям. После успешного
-    удаления перенаправляет на список товаров и выводит сообщение
-    об успехе.
+    Доступно только роли «Модератор продуктов» и суперпользователю.
+    После успешного удаления перенаправляет на список товаров и выводит
+    сообщение об успехе.
     """
 
     model: type[Category] = Category
     success_url: str = reverse_lazy("catalog:product_list")
+    permission_required = CATEGORY_DELETE_PERMISSION
 
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
         """
