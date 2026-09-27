@@ -19,10 +19,11 @@ class CategoryAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     """Настройки административной панели Продуктов."""
 
-    list_display = ("id", "name", "price", "category", "in_stock")
+    list_display = ("id", "name", "price", "category", "in_stock", "is_published")
     list_display_links = ("id", "name")
+    list_editable = ("is_published",)
     search_fields = ("name", "description")
-    list_filter = ("category",)
+    list_filter = ("category", "is_published")
 
 
 @admin.register(Contact)
