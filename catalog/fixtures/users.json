@@ -41,6 +41,54 @@
   },
   {
     "model": "users.customuser",
+    "pk": 25,
+    "fields": {
+      "password": "pbkdf2_sha256$1500000$OY7oEKkAGJdj6p9V1gntZh$f/DkCyMNKqBMeJjeAXkWrKDQrF6Vl9DERd0OManQs3E=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-09-27T19:43:56.441Z",
+      "email": "content@example.com",
+      "first_name": "Контент",
+      "last_name": "Менеджер",
+      "avatar": "",
+      "phone_number": "",
+      "country": "",
+      "groups": [
+        [
+          "Контент-менеджер"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.customuser",
+    "pk": 26,
+    "fields": {
+      "password": "pbkdf2_sha256$1500000$xuuoYmLOQf3rYyfpUKjik7$kGCIeDLl68RWeENP+dKcYzmU7e9a7oXeuv1iSvVNEGM=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-09-27T19:43:56.668Z",
+      "email": "editor@example.com",
+      "first_name": "Редактор",
+      "last_name": "Блога",
+      "avatar": "",
+      "phone_number": "",
+      "country": "",
+      "groups": [
+        [
+          "Контент-менеджер"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.customuser",
     "pk": 23,
     "fields": {
       "password": "pbkdf2_sha256$1500000$h7tAzltWmTE1m4fwHS0mlo$ZgE20La1TuEu6Hluqz+tvs/sfbbm3pIkBBz6Gd8gkwk=",
