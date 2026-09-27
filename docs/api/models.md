@@ -1,6 +1,6 @@
 # Модуль: `models.py`
 
-*Сгенерировано: 2026-09-27 00:12:26*
+*Сгенерировано: 2026-09-27 23:38:21*
 
 ---
 
@@ -46,6 +46,8 @@ Attributes:
     category (ForeignKey): Связь с моделью Category
     price (Decimal): Цена за покупку (максимум 10 цифр, 2 знака после запятой)
     in_stock (bool): Есть в наличии
+    is_published (bool): Опубликован ли товар
+    owner (ForeignKey): Пользователь, создавший товар
     created_at (datetime): Дата и время создания записи
     updated_at (datetime): Дата и время последнего обновления записи
 ```
@@ -140,6 +142,7 @@ Attributes:
     updated_at (DateTimeField): Дата и время последнего изменения записи (автоматически).
     is_published (BooleanField): Флаг публикации записи (по умолчанию False).
     views_count (PositiveIntegerField): Количество просмотров записи (по умолчанию 0).
+    owner (ForeignKey): Пользователь, создавший запись.
 
 Meta:
     verbose_name (str): Человекочитаемое имя модели в единственном числе.

@@ -1,5 +1,6 @@
 """Модели данных приложения blog."""
 
+from django.conf import settings
 from django.db import models
 
 
@@ -18,6 +19,7 @@ class BlogPost(models.Model):
         updated_at (DateTimeField): Дата и время последнего изменения записи (автоматически).
         is_published (BooleanField): Флаг публикации записи (по умолчанию False).
         views_count (PositiveIntegerField): Количество просмотров записи (по умолчанию 0).
+        owner (ForeignKey): Пользователь, создавший запись.
 
     Meta:
         verbose_name (str): Человекочитаемое имя модели в единственном числе.
@@ -35,6 +37,12 @@ class BlogPost(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата последнего изменения")
     is_published = models.BooleanField(default=False, verbose_name="Опубликовано")
     views_count = models.PositiveIntegerField(default=0, verbose_name="Просмотры")
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="blogposts",
+        verbose_name="Владелец",
+    )
 
     class Meta:
         """

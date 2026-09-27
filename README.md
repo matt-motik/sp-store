@@ -35,6 +35,13 @@
 - **Просмотр и редактирование профиля** пользователя
 - **Смена пароля** пользователя
 - **Защита CRUD операций** от анонимных пользователей
+- **Владелец товара** с ограничением доступа к неопубликованным товарам
+- **Снятие товара с публикации** отдельной кнопкой для модераторов
+- **Владелец записи блога** с автоподстановкой при создании
+- **Страница «Мои записи»** в блоге
+- **Черновики записей** видны только роли с правом изменения
+- **Роли и группы прав**: «Модератор продуктов», «Контент-менеджер»
+- **Разграничение прав** на страницах и в админ-панели
 
 ## 📋 Содержание
 
@@ -42,6 +49,7 @@
 - [Установка](#установка)
 - [Конфигурация](#конфигурация)
 - [Использование](#использование)
+- [Роли и права](#роли-и-права)
 - [Разработка](#разработка)
   - [Структура проекта](#структура-проекта)
   - [Линтеры и форматирование](#линтеры) 
@@ -130,6 +138,7 @@ http://127.0.0.1:8000/
 | `/category/<id>/delete/` | Удаление категории |
 | `/contacts/` | Контакты |
 | `/blogs/` | Список записей блога |
+| `/blogs/mine/` | Мои записи |
 | `/blogs/create/` | Создание записи |
 | `/blogs/<id>/` | Детали записи |
 | `/blogs/<id>/edit/` | Редактирование записи |
@@ -150,6 +159,12 @@ uv run python manage.py dell_all
 
 # Загрузка тестовых данных из фикстур
 uv run python manage.py seed_db
+
+# Создание групп и выдача ролей
+uv run python manage.py create_moderator_group
+uv run python manage.py add_moderator --email=moderator@example.com --password=secret123
+uv run python manage.py create_content_manager_group
+uv run python manage.py add_content_manager --email=content@example.com --password=secret123
 ```
 
 ## 👤 Админ-панель
@@ -161,6 +176,25 @@ uv run python manage.py createsuperuser
 Админка доступна по адресу: /admin
 
 Зарегистрированные модели: Category, Product, Contact, BlogPost, CustomUser
+
+<div id="роли-и-права"></div>
+
+## 👥 Роли и права
+
+Права выдаются через группы. Пользователь с ролью получает `is_staff` и работает в админ-панели в пределах прав своей группы.
+
+| Группа | Права в админ-панели |
+|--------|----------------------|
+| **Модератор продуктов** | Товары и категории: просмотр, создание, редактирование, удаление, снятие товара с публикации |
+| **Контент-менеджер** | Записи блога: просмотр, создание, редактирование, удаление |
+| **Суперпользователь** | Полный доступ ко всем разделам |
+
+Права на страницах сайта:
+
+- товар создаёт любой авторизованный пользователь, редактирует владелец, удаляет владелец или модератор продуктов;
+- снять товар с публикации может модератор продуктов;
+- категории создаёт, редактирует и удаляет модератор продуктов;
+- записи блога создаёт, редактирует и удаляет контент-менеджер, черновики видны только контент-менеджеру и суперпользователю.
 
 <div id="разработка"></div>
 
@@ -177,16 +211,26 @@ uv run python manage.py createsuperuser
 ```text
 sp-store/
 ├── blog/
+│   ├── fixtures/
+│   │   └── blogposts.json
+│   ├── management/
+│   │   ├── commands/
+│   │   │   ├── __init__.py
+│   │   │   ├── add_content_manager.py
+│   │   │   └── create_content_manager_group.py
+│   │   └── __init__.py
 │   ├── migrations/
 │   │   ├── 0001_initial.py
 │   │   ├── 0002_alter_blogpost_options_blogpost_updated_at.py
+│   │   ├── 0003_blogpost_owner.py
 │   │   └── __init__.py
 │   ├── templates/
 │   │   └── blog/
 │   │       ├── blogpost_confirm_delete.html
 │   │       ├── blogpost_detail.html
 │   │       ├── blogpost_form.html
-│   │       └── blogpost_list.html
+│   │       ├── blogpost_list.html
+│   │       └── blogpost_mine.html
 │   ├── __init__.py
 │   ├── admin.py
 │   ├── apps.py
@@ -198,10 +242,14 @@ sp-store/
 ├── catalog/
 │   ├── fixtures/
 │   │   ├── categories.json
-│   │   └── products.json
+│   │   ├── contacts.json
+│   │   ├── products.json
+│   │   └── users.json
 │   ├── management/
 │   │   ├── commands/
 │   │   │   ├── __init__.py
+│   │   │   ├── add_moderator.py
+│   │   │   ├── create_moderator_group.py
 │   │   │   ├── dell_all.py
 │   │   │   └── seed_db.py
 │   │   └── __init__.py
@@ -209,16 +257,20 @@ sp-store/
 │   │   ├── 0001_initial.py
 │   │   ├── 0002_contact_alter_product_name.py
 │   │   ├── 0003_product_in_stock.py
+│   │   ├── 0004_alter_product_options_product_is_published.py
+│   │   ├── 0005_product_owner.py
 │   │   └── __init__.py
 │   ├── templates/
 │   │   └── catalog/
+│   │       ├── category_confirm_delete.html
 │   │       ├── category_form.html
 │   │       ├── category_list.html
 │   │       ├── contacts.html
 │   │       ├── product_confirm_delete.html
 │   │       ├── product_detail.html
 │   │       ├── product_form.html
-│   │       └── product_list.html
+│   │       ├── product_list.html
+│   │       └── product_unpublish.html
 │   ├── __init__.py
 │   ├── admin.py
 │   ├── apps.py
@@ -335,6 +387,18 @@ uv run pre-commit run --all-files
 
 | Модуль | Функция/Класс | Краткое описание |
 |--------|---------------|------------------|
+| [**`add_content_manager.py`**](docs/api/add_content_manager.md) | | |
+| | [📦 Command](docs/api/add_content_manager.md#Command) | Добавляет пользователя в группу «Контент-менеджер». |
+| | [⚙️ Command.add_arguments](docs/api/add_content_manager.md#Command.add_arguments) | Добавляет аргументы командной строки. |
+| | [⚙️ Command.handle](docs/api/add_content_manager.md#Command.handle) | Создаёт или обновляет пользователя и добавляет его в группу. |
+| | [🔧 add_arguments](docs/api/add_content_manager.md#add_arguments) | Добавляет аргументы командной строки. |
+| | [🔧 handle](docs/api/add_content_manager.md#handle) | Создаёт или обновляет пользователя и добавляет его в группу. |
+| [**`add_moderator.py`**](docs/api/add_moderator.md) | | |
+| | [📦 Command](docs/api/add_moderator.md#Command) | Добавляет пользователя в группу «Модератор продуктов». |
+| | [⚙️ Command.add_arguments](docs/api/add_moderator.md#Command.add_arguments) | Добавляет аргументы командной строки. |
+| | [⚙️ Command.handle](docs/api/add_moderator.md#Command.handle) | Создаёт или обновляет пользователя и добавляет его в группу. |
+| | [🔧 add_arguments](docs/api/add_moderator.md#add_arguments) | Добавляет аргументы командной строки. |
+| | [🔧 handle](docs/api/add_moderator.md#handle) | Создаёт или обновляет пользователя и добавляет его в группу. |
 | [**`addsu.py`**](docs/api/addsu.md) | | |
 | | [📦 Command](docs/api/addsu.md#Command) | Создаёт суперпользователя с указанными email и паролем. |
 | | [⚙️ Command.add_arguments](docs/api/addsu.md#Command.add_arguments) | Добавляет аргументы командной строки. |
@@ -353,10 +417,22 @@ uv run pre-commit run --all-files
 | | [📦 CatalogConfig](docs/api/apps.md#CatalogConfig) | Конфигурация приложения каталога. |
 | | [📦 BlogConfig](docs/api/apps.md#BlogConfig) | Конфигурация приложения блога. |
 | | [📦 UsersConfig](docs/api/apps.md#UsersConfig) | Конфигурация приложения users. |
+| [**`create_content_manager_group.py`**](docs/api/create_content_manager_group.md) | | |
+| | [📦 Command](docs/api/create_content_manager_group.md#Command) | Создаёт группу «Контент-менеджер» и назначает ей права на записи блога. |
+| | [⚙️ Command.add_arguments](docs/api/create_content_manager_group.md#Command.add_arguments) | Добавляет аргументы командной строки. |
+| | [⚙️ Command.handle](docs/api/create_content_manager_group.md#Command.handle) | Создаёт группу и назначает ей права на записи блога. |
+| | [🔧 add_arguments](docs/api/create_content_manager_group.md#add_arguments) | Добавляет аргументы командной строки. |
+| | [🔧 handle](docs/api/create_content_manager_group.md#handle) | Создаёт группу и назначает ей права на записи блога. |
+| [**`create_moderator_group.py`**](docs/api/create_moderator_group.md) | | |
+| | [📦 Command](docs/api/create_moderator_group.md#Command) | Создаёт группу «Модератор продуктов» и назначает ей права. |
+| | [⚙️ Command.add_arguments](docs/api/create_moderator_group.md#Command.add_arguments) | Добавляет аргументы командной строки. |
+| | [⚙️ Command.handle](docs/api/create_moderator_group.md#Command.handle) | Создаёт группу и назначает ей права на товары и категории. |
+| | [🔧 add_arguments](docs/api/create_moderator_group.md#add_arguments) | Добавляет аргументы командной строки. |
+| | [🔧 handle](docs/api/create_moderator_group.md#handle) | Создаёт группу и назначает ей права на товары и категории. |
 | [**`dell_all.py`**](docs/api/dell_all.md) | | |
 | | [📦 Command](docs/api/dell_all.md#Command) | Команда удаления. |
-| | [⚙️ Command.handle](docs/api/dell_all.md#Command.handle) | Хенндл. |
-| | [🔧 handle](docs/api/dell_all.md#handle) | Хенндл. |
+| | [⚙️ Command.handle](docs/api/dell_all.md#Command.handle) | Хендл. |
+| | [🔧 handle](docs/api/dell_all.md#handle) | Хендл. |
 | [**`forms.py`**](docs/api/forms.md) | | |
 | | [📦 CategoryForm](docs/api/forms.md#CategoryForm) | Форма для создания и редактирования категории. |
 | | [📦 ProductForm](docs/api/forms.md#ProductForm) | Форма для создания и редактирования товара. |
@@ -413,6 +489,7 @@ uv run pre-commit run --all-files
 | | [📦 ProductListView](docs/api/views.md#ProductListView) | Представление для отображения списка товаров с пагинацией. |
 | | [⚙️ ProductListView.get_queryset](docs/api/views.md#ProductListView.get_queryset) | Возвращает список товаров, при необходимости отфильтрованный по категории. |
 | | [📦 ProductDetailView](docs/api/views.md#ProductDetailView) | Представление для отображения товара. |
+| | [⚙️ ProductDetailView.get_queryset](docs/api/views.md#ProductDetailView.get_queryset) | Возвращает набор товаров, доступных текущему пользователю. |
 | | [📦 ContactsView](docs/api/views.md#ContactsView) | Отображает страницу контактов и обрабатывает форму обратной связи. |
 | | [⚙️ ContactsView.get](docs/api/views.md#ContactsView.get) | Получение данных о контакте для связи. |
 | | [⚙️ ContactsView.post](docs/api/views.md#ContactsView.post) | Отправка обратной связи. |
@@ -423,10 +500,15 @@ uv run pre-commit run --all-files
 | | [⚙️ CategoryCreateView.get_success_url](docs/api/views.md#CategoryCreateView.get_success_url) | Возвращает URL для перенаправления после успешного создания. |
 | | [⚙️ CategoryCreateView.form_valid](docs/api/views.md#CategoryCreateView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [📦 ProductUpdateView](docs/api/views.md#ProductUpdateView) | Представление для редактирования товара. |
+| | [⚙️ ProductUpdateView.get_queryset](docs/api/views.md#ProductUpdateView.get_queryset) | Возвращает товары, которые текущий пользователь может редактировать. |
 | | [⚙️ ProductUpdateView.get_success_url](docs/api/views.md#ProductUpdateView.get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
 | | [⚙️ ProductUpdateView.form_valid](docs/api/views.md#ProductUpdateView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [📦 ProductDeleteView](docs/api/views.md#ProductDeleteView) | Представление для удаления товара. |
+| | [⚙️ ProductDeleteView.get_queryset](docs/api/views.md#ProductDeleteView.get_queryset) | Возвращает товары, которые текущий пользователь может удалить. |
 | | [⚙️ ProductDeleteView.form_valid](docs/api/views.md#ProductDeleteView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [📦 ProductUnpublishView](docs/api/views.md#ProductUnpublishView) | Представление для снятия товара с публикации. |
+| | [⚙️ ProductUnpublishView.get](docs/api/views.md#ProductUnpublishView.get) | Отображает страницу подтверждения снятия товара с публикации. |
+| | [⚙️ ProductUnpublishView.post](docs/api/views.md#ProductUnpublishView.post) | Снимает товар с публикации и перенаправляет на страницу товара. |
 | | [📦 CategoryUpdateView](docs/api/views.md#CategoryUpdateView) | Представление для редактирования категории. |
 | | [⚙️ CategoryUpdateView.get_success_url](docs/api/views.md#CategoryUpdateView.get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
 | | [⚙️ CategoryUpdateView.form_valid](docs/api/views.md#CategoryUpdateView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
@@ -435,35 +517,47 @@ uv run pre-commit run --all-files
 | | [📦 CategoryListView](docs/api/views.md#CategoryListView) | Представление для отображения списка категорий. |
 | | [⚙️ CategoryListView.get_queryset](docs/api/views.md#CategoryListView.get_queryset) | Возвращает категории с подсчётом количества товаров. |
 | | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает список товаров, при необходимости отфильтрованный по категории. |
+| | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает набор товаров, доступных текущему пользователю. |
 | | [🔧 get](docs/api/views.md#get) | Получение данных о контакте для связи. |
 | | [🔧 post](docs/api/views.md#post) | Отправка обратной связи. |
 | | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного создания. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного создания. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает товары, которые текущий пользователь может редактировать. |
 | | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает товары, которые текущий пользователь может удалить. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 get](docs/api/views.md#get) | Отображает страницу подтверждения снятия товара с публикации. |
+| | [🔧 post](docs/api/views.md#post) | Снимает товар с публикации и перенаправляет на страницу товара. |
 | | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает категории с подсчётом количества товаров. |
 | | [📦 BlogPostDetailView](docs/api/views.md#BlogPostDetailView) | Представление для отображения записи. |
+| | [⚙️ BlogPostDetailView.get_queryset](docs/api/views.md#BlogPostDetailView.get_queryset) | Возвращает набор записей, доступных текущему пользователю. |
 | | [⚙️ BlogPostDetailView.get_object](docs/api/views.md#BlogPostDetailView.get_object) | Переопредение данных записи, для увеличения счётчика просмотров. |
 | | [⚙️ BlogPostDetailView.send_congratulation_email](docs/api/views.md#BlogPostDetailView.send_congratulation_email) | Отправляет поздравление о достижении 100 просмотров. |
-| | [📦 BlogPostListView](docs/api/views.md#BlogPostListView) | Представление для отображения списка опубликованных записей в блоге. |
+| | [📦 BlogPostListView](docs/api/views.md#BlogPostListView) | Представление для отображения списка записей в блоге. |
 | | [⚙️ BlogPostListView.get_queryset](docs/api/views.md#BlogPostListView.get_queryset) | Возвращает отсортированный список записей. |
+| | [📦 BlogPostMyListView](docs/api/views.md#BlogPostMyListView) | Представление для отображения записей, созданных текущим пользователем. |
+| | [⚙️ BlogPostMyListView.get_queryset](docs/api/views.md#BlogPostMyListView.get_queryset) | Возвращает записи текущего пользователя. |
 | | [📦 BlogPostCreateView](docs/api/views.md#BlogPostCreateView) | Представление для добавления записи блога. |
 | | [⚙️ BlogPostCreateView.get_success_url](docs/api/views.md#BlogPostCreateView.get_success_url) | Возвращает URL для перенаправления после успешного создания. |
+| | [⚙️ BlogPostCreateView.form_valid](docs/api/views.md#BlogPostCreateView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [📦 BlogPostUpdateView](docs/api/views.md#BlogPostUpdateView) | Представление для редактирования записи блога. |
 | | [⚙️ BlogPostUpdateView.get_success_url](docs/api/views.md#BlogPostUpdateView.get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
 | | [⚙️ BlogPostUpdateView.form_valid](docs/api/views.md#BlogPostUpdateView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [📦 BlogPostDeleteView](docs/api/views.md#BlogPostDeleteView) | Представление для удаления записи блога. |
 | | [⚙️ BlogPostDeleteView.form_valid](docs/api/views.md#BlogPostDeleteView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
+| | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает набор записей, доступных текущему пользователю. |
 | | [🔧 get_object](docs/api/views.md#get_object) | Переопредение данных записи, для увеличения счётчика просмотров. |
 | | [🔧 send_congratulation_email](docs/api/views.md#send_congratulation_email) | Отправляет поздравление о достижении 100 просмотров. |
 | | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает отсортированный список записей. |
+| | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает записи текущего пользователя. |
 | | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного создания. |
+| | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного редактирования. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
@@ -572,6 +666,11 @@ uv run pre-commit run --all-files
 - [x] Проверить линтеры (`ruff`, `mypy`)
 - [x] Финальная вычитка документации и обновление README
 - [x] Обновить документацию
+- [x] Роли и группы прав: «Модератор продуктов», «Контент-менеджер», команды выдачи
+- [x] Владельцы товаров и записей блога, страница «Мои записи»
+- [x] Снятие товара с публикации через кастомное право `can_unpublish_product`
+- [x] Ограничение CRUD категорий на модератора продуктов и суперпользователя
+- [x] Выдача `is_staff` ролевым пользователям, фикстуры пользователей и записей блога
 
 ## Команда проекта
 

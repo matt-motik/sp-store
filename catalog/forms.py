@@ -81,7 +81,7 @@ class ProductForm(BootstrapStyleMixin, forms.ModelForm):
         """
 
         model = Product
-        fields = ["name", "description", "image", "category", "price", "in_stock"]
+        fields = ["name", "description", "image", "category", "price", "in_stock", "is_published"]
         widgets = {
             "name": forms.TextInput(
                 attrs={
@@ -109,6 +109,11 @@ class ProductForm(BootstrapStyleMixin, forms.ModelForm):
             "category": forms.Select(
                 attrs={
                     "aria-describedby": "categoryHelp",
+                }
+            ),
+            "is_published": forms.CheckboxInput(
+                attrs={
+                    "class": "form-check-input",
                 }
             ),
         }
