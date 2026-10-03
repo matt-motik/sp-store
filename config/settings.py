@@ -180,7 +180,11 @@ USE_CACHES = env("USE_CACHES")
 if USE_CACHES:
     CACHES = {
         "default": {
-            "BACKEND": env("REDIS_BACKEND"),
+            "BACKEND": "django_redis.cache.RedisCache",
             "LOCATION": env("REDIS_LOCATION"),
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                "IGNORE_EXCEPTIONS": True,
+            },
         }
     }

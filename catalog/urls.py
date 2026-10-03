@@ -6,6 +6,7 @@ from .apps import CatalogConfig
 from .views import (
     CategoryCreateView,
     CategoryDeleteView,
+    CategoryDetailView,
     CategoryListView,
     CategoryUpdateView,
     ContactsView,
@@ -26,8 +27,9 @@ urlpatterns = [
     path("products/<int:pk>/edit/", ProductUpdateView.as_view(), name="edit_product"),
     path("products/<int:pk>/unpublish/", ProductUnpublishView.as_view(), name="unpublish_product"),
     path("products/<int:pk>/delete/", ProductDeleteView.as_view(), name="delete_product"),
-    path("category/add/", CategoryCreateView.as_view(), name="add_category"),
-    path("category/<int:pk>/edit/", CategoryUpdateView.as_view(), name="edit_category"),
-    path("category/<int:pk>/delete/", CategoryDeleteView.as_view(), name="delete_category"),
     path("categories/", CategoryListView.as_view(), name="category_list"),
+    path("categories/add/", CategoryCreateView.as_view(), name="add_category"),
+    path("categories/<int:pk>/", CategoryDetailView.as_view(), name="category_detail"),
+    path("categories/<int:pk>/edit/", CategoryUpdateView.as_view(), name="edit_category"),
+    path("categories/<int:pk>/delete/", CategoryDeleteView.as_view(), name="delete_category"),
 ]

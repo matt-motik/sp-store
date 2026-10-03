@@ -16,7 +16,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from catalog.forms import CategoryForm, ProductForm
 from catalog.models import Category, Contact, Product
-from catalog.services import get_available_products
+from catalog.services import get_available_products, get_category_products
 
 # Create your views here.
 
@@ -445,3 +445,49 @@ class CategoryListView(ListView):
         if self.request.user.has_perm(UNPUBLISH_PERMISSION):
             return queryset.annotate(product_count=Count("products"))
         return queryset.annotate(product_count=Count("products", filter=Q(products__is_published=True)))
+
+
+class CategoryDetailView(ListView):
+    """
+    Представление для отображения товаров одной категории.
+
+    Принимает pk категории из URL, получает товары через сервис
+    с низкоуровневым кешированием. Использует пагинацию по 8 товаров
+    на страницу.
+    Контекст шаблона:
+        - products (list[Product]): Товары текущей страницы.
+        - category (Category): Объект категории.
+        - page_obj (Page): Объект пагинации для навигации по страницам.
+    """
+
+    model: type[Product] = Product
+    template_name = "catalog/category_detail.html"
+    context_object_name = "products"
+    paginate_by = 8
+
+    def get_queryset(self) -> list[Product]:
+        """
+        Возвращает товары текущей категории через сервис.
+
+        Сохраняет категорию в self.category, чтобы не делать повторный
+        запрос в get_context_data.
+
+        Returns:
+            list[Product]: Товары категории из кеша или БД.
+        """
+        self.category = get_object_or_404(Category, pk=self.kwargs["pk"])
+        return get_category_products(self.category.pk)
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        """
+        Добавляет категорию в контекст шаблона.
+
+        Args:
+            **kwargs: Дополнительный контекст от родительского класса.
+
+        Returns:
+            dict[str, Any]: Контекст с объектом category.
+        """
+        context = super().get_context_data(**kwargs)
+        context["category"] = self.category
+        return context
