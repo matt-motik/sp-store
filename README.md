@@ -263,6 +263,7 @@ sp-store/
 │   ├── templates/
 │   │   └── catalog/
 │   │       ├── category_confirm_delete.html
+│   │       ├── category_detail.html
 │   │       ├── category_form.html
 │   │       ├── category_list.html
 │   │       ├── contacts.html
@@ -276,6 +277,8 @@ sp-store/
 │   ├── apps.py
 │   ├── forms.py
 │   ├── models.py
+│   ├── services.py
+│   ├── signals.py
 │   ├── tests.py
 │   ├── urls.py
 │   └── views.py
@@ -415,6 +418,8 @@ uv run pre-commit run --all-files
 | | [🔧 get_fieldsets](docs/api/admin.md#get_fieldsets) | Возвращает fieldsets в зависимости от режима (создание/редактирование). |
 | [**`apps.py`**](docs/api/apps.md) | | |
 | | [📦 CatalogConfig](docs/api/apps.md#CatalogConfig) | Конфигурация приложения каталога. |
+| | [⚙️ CatalogConfig.ready](docs/api/apps.md#CatalogConfig.ready) | Регистрирует сигналы приложения. |
+| | [🔧 ready](docs/api/apps.md#ready) | Регистрирует сигналы приложения. |
 | | [📦 BlogConfig](docs/api/apps.md#BlogConfig) | Конфигурация приложения блога. |
 | | [📦 UsersConfig](docs/api/apps.md#UsersConfig) | Конфигурация приложения users. |
 | [**`create_content_manager_group.py`**](docs/api/create_content_manager_group.md) | | |
@@ -483,13 +488,19 @@ uv run pre-commit run --all-files
 | | [📦 Command](docs/api/seed_db.md#Command) | Команда засеивания базы тестовыми данными. |
 | | [⚙️ Command.handle](docs/api/seed_db.md#Command.handle) | Хенндл. |
 | | [🔧 handle](docs/api/seed_db.md#handle) | Хенндл. |
+| [**`services.py`**](docs/api/services.md) | | |
+| | [🔧 get_available_products](docs/api/services.md#get_available_products) | Возвращает доступные пользователю товары с сортировкой по дате создания. |
+| | [🔧 get_category_products](docs/api/services.md#get_category_products) | Возвращает товары категории с низкоуровневым кешированием. |
+| [**`signals.py`**](docs/api/signals.md) | | |
+| | [🔧 invalidate_product_cache](docs/api/signals.md#invalidate_product_cache) | Сбрасывает кеш товара и связанных категорий. |
+| | [🔧 remember_old_category](docs/api/signals.md#remember_old_category) | Запоминает старую категорию товара перед сохранением. |
 | [**`validators.py`**](docs/api/validators.md) | | |
 | | [🔧 validate_image_file](docs/api/validators.md#validate_image_file) | Проверяет размер и формат загружаемого изображения. |
 | [**`views.py`**](docs/api/views.md) | | |
 | | [📦 ProductListView](docs/api/views.md#ProductListView) | Представление для отображения списка товаров с пагинацией. |
 | | [⚙️ ProductListView.get_queryset](docs/api/views.md#ProductListView.get_queryset) | Возвращает список товаров, при необходимости отфильтрованный по категории. |
 | | [📦 ProductDetailView](docs/api/views.md#ProductDetailView) | Представление для отображения товара. |
-| | [⚙️ ProductDetailView.get_queryset](docs/api/views.md#ProductDetailView.get_queryset) | Возвращает набор товаров, доступных текущему пользователю. |
+| | [⚙️ ProductDetailView.get_object](docs/api/views.md#ProductDetailView.get_object) | Возвращает товар, доступный текущему пользователю. |
 | | [📦 ContactsView](docs/api/views.md#ContactsView) | Отображает страницу контактов и обрабатывает форму обратной связи. |
 | | [⚙️ ContactsView.get](docs/api/views.md#ContactsView.get) | Получение данных о контакте для связи. |
 | | [⚙️ ContactsView.post](docs/api/views.md#ContactsView.post) | Отправка обратной связи. |
@@ -516,8 +527,11 @@ uv run pre-commit run --all-files
 | | [⚙️ CategoryDeleteView.form_valid](docs/api/views.md#CategoryDeleteView.form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [📦 CategoryListView](docs/api/views.md#CategoryListView) | Представление для отображения списка категорий. |
 | | [⚙️ CategoryListView.get_queryset](docs/api/views.md#CategoryListView.get_queryset) | Возвращает категории с подсчётом количества товаров. |
+| | [📦 CategoryDetailView](docs/api/views.md#CategoryDetailView) | Представление для отображения товаров одной категории. |
+| | [⚙️ CategoryDetailView.get_queryset](docs/api/views.md#CategoryDetailView.get_queryset) | Возвращает товары текущей категории через сервис. |
+| | [⚙️ CategoryDetailView.get_context_data](docs/api/views.md#CategoryDetailView.get_context_data) | Добавляет категорию в контекст шаблона. |
 | | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает список товаров, при необходимости отфильтрованный по категории. |
-| | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает набор товаров, доступных текущему пользователю. |
+| | [🔧 get_object](docs/api/views.md#get_object) | Возвращает товар, доступный текущему пользователю. |
 | | [🔧 get](docs/api/views.md#get) | Получение данных о контакте для связи. |
 | | [🔧 post](docs/api/views.md#post) | Отправка обратной связи. |
 | | [🔧 get_success_url](docs/api/views.md#get_success_url) | Возвращает URL для перенаправления после успешного создания. |
@@ -535,6 +549,8 @@ uv run pre-commit run --all-files
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [🔧 form_valid](docs/api/views.md#form_valid) | Обрабатывает валидную форму и добавляет сообщение об успехе. |
 | | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает категории с подсчётом количества товаров. |
+| | [🔧 get_queryset](docs/api/views.md#get_queryset) | Возвращает товары текущей категории через сервис. |
+| | [🔧 get_context_data](docs/api/views.md#get_context_data) | Добавляет категорию в контекст шаблона. |
 | | [📦 BlogPostDetailView](docs/api/views.md#BlogPostDetailView) | Представление для отображения записи. |
 | | [⚙️ BlogPostDetailView.get_queryset](docs/api/views.md#BlogPostDetailView.get_queryset) | Возвращает набор записей, доступных текущему пользователю. |
 | | [⚙️ BlogPostDetailView.get_object](docs/api/views.md#BlogPostDetailView.get_object) | Переопредение данных записи, для увеличения счётчика просмотров. |
