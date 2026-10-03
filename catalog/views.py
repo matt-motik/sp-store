@@ -83,7 +83,7 @@ class ProductDetailView(DetailView):
         if not self._user_can_view(pk):
             raise Http404
 
-        cache_key = f"product:{pk}"
+        cache_key = f"product_{pk}"
         product = cache.get(cache_key)
 
         if product is not None and product.pk is None:

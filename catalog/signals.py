@@ -22,7 +22,7 @@ def invalidate_product_cache(sender: type[Product], instance: Product, **kwargs:
         instance: Сохранённый или удалённый экземпляр товара.
         **kwargs: Дополнительные аргументы сигнала (created, raw, using и т.д.).
     """
-    cache.delete(f"product:{instance.pk}")
+    cache.delete(f"product_{instance.pk}")
     cache.delete(f"category_{instance.category_id}")
 
     old_category_id = getattr(instance, "_old_category_id", None)

@@ -157,7 +157,7 @@ class ActivateView(View):
             uid = force_str(urlsafe_base64_decode(uidb64))
             user: CustomUser = CustomUser.objects.get(pk=uid)
             return user
-        except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        except TypeError, ValueError, OverflowError, CustomUser.DoesNotExist:
             return None
 
 
