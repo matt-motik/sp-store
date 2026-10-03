@@ -16,6 +16,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from catalog.forms import CategoryForm, ProductForm
 from catalog.models import Category, Contact, Product
+from catalog.services import get_available_products
 
 # Create your views here.
 
@@ -33,6 +34,7 @@ class ProductListView(ListView):
     Отображает все товары, отсортированные по дате создания (новые сверху).
     Опубликованные товары видны всем, неопубликованные — только их владельцам,
     модераторам и суперпользователям.
+    Поддерживает фильтрацию по категории через GET-параметр category.
     Использует пагинацию по 8 товаров на страницу.
     Контекст шаблона:
         - product_list (QuerySet[Product]): Список товаров для текущей страницы.
@@ -51,16 +53,9 @@ class ProductListView(ListView):
         Returns:
             QuerySet[Product]: Набор товаров, отсортированный по created_at (по убыванию).
         """
-        queryset = super().get_queryset().order_by("-created_at")
-        if not self.request.user.has_perm(UNPUBLISH_PERMISSION):
-            if self.request.user.is_authenticated:
-                queryset = queryset.filter(Q(is_published=True) | Q(owner=self.request.user))
-            else:
-                queryset = queryset.filter(is_published=True)
         category_id = self.request.GET.get("category")
-        if category_id:
-            queryset = queryset.filter(category_id=category_id)
-        return queryset
+        category_id_int = int(category_id) if category_id and category_id.isdigit() else None
+        return get_available_products(self.request.user, category_id_int)
 
 
 class ProductDetailView(DetailView):
