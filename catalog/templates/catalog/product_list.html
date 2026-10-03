@@ -32,7 +32,7 @@
                 {% endif %}
             </div>
             <div class="card-body">
-                <h1 class="card-title pricing-card-title">$ {{product.price}}</h1>
+                <h1 class="card-title pricing-card-title">₽ {{product.price}}</h1>
                 <div>{{product.description|truncatechars:100|linebreaks}}</div>
                 <p><a class="btn btn-sm btn-outline-secondary" href="{% url 'catalog:product_detail' product.id %}"
                       role="button">View details &raquo;</a></p>

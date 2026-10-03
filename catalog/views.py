@@ -1,11 +1,13 @@
 """Представления (views) приложения catalog."""
 
+from typing import Any
+
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, QuerySet
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.db.models import Count, Q, QuerySet
 from django.forms import BaseModelForm
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.functional import Promise
 from django.views import View
@@ -16,12 +18,20 @@ from catalog.models import Category, Contact, Product
 
 # Create your views here.
 
+UNPUBLISH_PERMISSION = "catalog.can_unpublish_product"
+DELETE_PERMISSION = "catalog.delete_product"
+CATEGORY_ADD_PERMISSION = "catalog.add_category"
+CATEGORY_CHANGE_PERMISSION = "catalog.change_category"
+CATEGORY_DELETE_PERMISSION = "catalog.delete_category"
+
 
 class ProductListView(ListView):
     """
     Представление для отображения списка товаров с пагинацией.
 
     Отображает все товары, отсортированные по дате создания (новые сверху).
+    Опубликованные товары видны всем, неопубликованные — только их владельцам,
+    модераторам и суперпользователям.
     Использует пагинацию по 8 товаров на страницу.
     Контекст шаблона:
         - product_list (QuerySet[Product]): Список товаров для текущей страницы.
@@ -41,6 +51,11 @@ class ProductListView(ListView):
             QuerySet[Product]: Набор товаров, отсортированный по created_at (по убыванию).
         """
         queryset = super().get_queryset().order_by("-created_at")
+        if not self.request.user.has_perm(UNPUBLISH_PERMISSION):
+            if self.request.user.is_authenticated:
+                queryset = queryset.filter(Q(is_published=True) | Q(owner=self.request.user))
+            else:
+                queryset = queryset.filter(is_published=True)
         category_id = self.request.GET.get("category")
         if category_id:
             queryset = queryset.filter(category_id=category_id)
@@ -48,9 +63,29 @@ class ProductListView(ListView):
 
 
 class ProductDetailView(DetailView):
-    """Представление для отображения товара."""
+    """
+    Представление для отображения товара.
+
+    Неопубликованные товары видны только владельцам, модераторам и суперпользователям.
+    """
 
     model = Product
+
+    def get_queryset(self) -> QuerySet[Product]:
+        """
+        Возвращает набор товаров, доступных текущему пользователю.
+
+        Returns:
+            QuerySet[Product]: Опубликованные товары и собственные неопубликованные,
+            либо все товары для модератора.
+        """
+        queryset = super().get_queryset()
+        if not self.request.user.has_perm(UNPUBLISH_PERMISSION):
+            if self.request.user.is_authenticated:
+                queryset = queryset.filter(Q(is_published=True) | Q(owner=self.request.user))
+            else:
+                queryset = queryset.filter(is_published=True)
+        return queryset
 
 
 class ContactsView(View):
@@ -80,6 +115,7 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
     """
     Представление для добавления товара.
 
+    Текущий пользователь автоматически становится владельцем нового товара.
     Добавляет товар и выводит сообщение об успехе.
     """
 
@@ -99,6 +135,7 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form: ProductForm) -> HttpResponse:
         """Обрабатывает валидную форму и добавляет сообщение об успехе."""
+        form.instance.owner = self.request.user
         response = super().form_valid(form)
         messages.success(
             self.request,
@@ -108,15 +145,17 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
         return response
 
 
-class CategoryCreateView(LoginRequiredMixin, CreateView):
+class CategoryCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     """
     Представление для добавления категории.
 
+    Доступно только роли «Модератор продуктов» и суперпользователю.
     Добавляет категорию и выводит сообщение об успехе.
     """
 
-    model = Category
+    model: type[Category] = Category
     form_class: type[CategoryForm] = CategoryForm
+    permission_required = CATEGORY_ADD_PERMISSION
 
     def get_success_url(self) -> Promise:
         """
@@ -142,13 +181,26 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
     """
     Представление для редактирования товара.
 
-    Доступно только авторизованным пользователям. После успешного
+    Доступно только владельцу товара и суперпользователю. После успешного
     редактирования перенаправляет на страницу товара и выводит
     сообщение об успехе.
     """
 
     model: type[Product] = Product
     form_class: type[ProductForm] = ProductForm
+
+    def get_queryset(self) -> QuerySet[Product]:
+        """
+        Возвращает товары, которые текущий пользователь может редактировать.
+
+        Returns:
+            QuerySet[Product]: Все товары для суперпользователя,
+            либо только товары текущего владельца.
+        """
+        queryset = super().get_queryset()
+        if not self.request.user.is_superuser:
+            queryset = queryset.filter(owner=self.request.user)
+        return queryset
 
     def get_success_url(self) -> str:
         """
@@ -182,13 +234,26 @@ class ProductDeleteView(LoginRequiredMixin, DeleteView):
     """
     Представление для удаления товара.
 
-    Доступно только авторизованным пользователям. После успешного
-    удаления перенаправляет на список товаров и выводит сообщение
-    об успехе.
+    Доступно только владельцу товара и пользователям с правом delete_product.
+    После успешного удаления перенаправляет на список товаров и выводит
+    сообщение об успехе.
     """
 
     model: type[Product] = Product
     success_url: str = reverse_lazy("catalog:product_list")
+
+    def get_queryset(self) -> QuerySet[Product]:
+        """
+        Возвращает товары, которые текущий пользователь может удалить.
+
+        Returns:
+            QuerySet[Product]: Все товары для пользователя с правом delete_product,
+            либо только товары текущего владельца.
+        """
+        queryset = super().get_queryset()
+        if not self.request.user.has_perm(DELETE_PERMISSION):
+            queryset = queryset.filter(owner=self.request.user)
+        return queryset
 
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
         """
@@ -210,17 +275,70 @@ class ProductDeleteView(LoginRequiredMixin, DeleteView):
         return response
 
 
-class CategoryUpdateView(LoginRequiredMixin, UpdateView):
+class ProductUnpublishView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    """
+    Представление для снятия товара с публикации.
+
+    Доступно только пользователям с правом can_unpublish_product.
+    Показывает страницу подтверждения, а после отправки формы снимает
+    товар с публикации и выводит сообщение об успехе.
+    """
+
+    template_name = "catalog/product_unpublish.html"
+    permission_required = UNPUBLISH_PERMISSION
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        """
+        Отображает страницу подтверждения снятия товара с публикации.
+
+        Args:
+            request: Запрос страницы подтверждения.
+            *args: Позиционные аргументы (не используются).
+            **kwargs: Именованные аргументы, содержащие pk товара.
+
+        Returns:
+            HttpResponse: Страница с формой подтверждения.
+        """
+        product = get_object_or_404(Product, id=kwargs["pk"])
+        return render(request, self.template_name, {"product": product})
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        """
+        Снимает товар с публикации и перенаправляет на страницу товара.
+
+        Args:
+            request: Запрос с отправленной формой подтверждения.
+            *args: Позиционные аргументы (не используются).
+            **kwargs: Именованные аргументы, содержащие pk товара.
+
+        Returns:
+            HttpResponse: Редирект на страницу деталей товара.
+        """
+        product = get_object_or_404(Product, id=kwargs["pk"])
+        if not request.user.has_perm(UNPUBLISH_PERMISSION):
+            return HttpResponseForbidden("У Вас нет прав на снятие публикации")
+        product.is_published = False
+        product.save(update_fields=["is_published", "updated_at"])
+        messages.success(
+            self.request,
+            f"Товар '{product.name}' снят с публикации!",
+            extra_tags="product",
+        )
+        return redirect("catalog:product_detail", pk=product.pk)
+
+
+class CategoryUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     """
     Представление для редактирования категории.
 
-    Доступно только авторизованным пользователям. После успешного
-    редактирования перенаправляет на форму добавления товара и выводит
-    сообщение об успехе.
+    Доступно только роли «Модератор продуктов» и суперпользователю.
+    После успешного редактирования перенаправляет на форму добавления
+    товара и выводит сообщение об успехе.
     """
 
     model: type[Category] = Category
     form_class: type[CategoryForm] = CategoryForm
+    permission_required = CATEGORY_CHANGE_PERMISSION
 
     def get_success_url(self) -> str:
         """
@@ -250,17 +368,18 @@ class CategoryUpdateView(LoginRequiredMixin, UpdateView):
         return response
 
 
-class CategoryDeleteView(LoginRequiredMixin, DeleteView):
+class CategoryDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """
     Представление для удаления категории.
 
-    Доступно только авторизованным пользователям. После успешного
-    удаления перенаправляет на список товаров и выводит сообщение
-    об успехе.
+    Доступно только роли «Модератор продуктов» и суперпользователю.
+    После успешного удаления перенаправляет на список товаров и выводит
+    сообщение об успехе.
     """
 
     model: type[Category] = Category
     success_url: str = reverse_lazy("catalog:product_list")
+    permission_required = CATEGORY_DELETE_PERMISSION
 
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
         """
@@ -287,7 +406,8 @@ class CategoryListView(ListView):
     Представление для отображения списка категорий.
 
     Отображает все категории с аннотацией количества товаров в каждой.
-    Доступно всем пользователям.
+    Количество неопубликованных товаров показывается только модераторам
+    и суперпользователям. Доступно всем пользователям.
     """
 
     model: type[Category] = Category
@@ -301,4 +421,7 @@ class CategoryListView(ListView):
         Returns:
             QuerySet[Category]: Категории, аннотированные полем product_count.
         """
-        return super().get_queryset().annotate(product_count=Count("products"))
+        queryset = super().get_queryset()
+        if self.request.user.has_perm(UNPUBLISH_PERMISSION):
+            return queryset.annotate(product_count=Count("products"))
+        return queryset.annotate(product_count=Count("products", filter=Q(products__is_published=True)))

@@ -1,0 +1,90 @@
+"""Management-команда для добавления пользователя в группу контент-менеджеров."""
+
+from typing import Any
+
+from django.contrib.auth.models import Group
+from django.core.management.base import BaseCommand, CommandParser
+
+from blog.management.commands.create_content_manager_group import CONTENT_MANAGER_GROUP_NAME
+from users.models import CustomUser
+
+
+class Command(BaseCommand):
+    """Добавляет пользователя в группу «Контент-менеджер».
+
+    Если пользователя с таким email ещё нет — создаёт его, а переданный
+    пароль устанавливает вместе с активным статусом, чтобы можно было
+    сразу войти под ним. Пользователю всегда выдаётся is_staff, иначе
+    он не сможет войти в админку, даже имея права на записи блога.
+
+    Группа должна существовать, иначе команду create_content_manager_group
+    нужно запустить заранее.
+
+    Example:
+        python manage.py add_content_manager --email=content@example.com --password=secret123
+    """
+
+    help = "Добавляет пользователя в группу «Контент-менеджер»"
+
+    def add_arguments(self, parser: CommandParser) -> None:
+        """Добавляет аргументы командной строки.
+
+        Args:
+            parser: Парсер аргументов Django.
+        """
+        parser.add_argument(
+            "--email",
+            type=str,
+            required=True,
+            help="Email пользователя",
+        )
+        parser.add_argument(
+            "--password",
+            type=str,
+            help="Пароль пользователя, обязателен для нового пользователя",
+        )
+
+    def handle(self, *args: Any, **options: Any) -> None:
+        """Создаёт или обновляет пользователя и добавляет его в группу.
+
+        Args:
+            *args: Позиционные аргументы (не используются).
+            **options: Опции команды, включающие email и password.
+        """
+        email: str = options["email"]
+        password: str | None = options["password"]
+
+        try:
+            group = Group.objects.get(name=CONTENT_MANAGER_GROUP_NAME)
+        except Group.DoesNotExist:
+            self.stderr.write(
+                self.style.ERROR(
+                    f"Группа '{CONTENT_MANAGER_GROUP_NAME}' не найдена. "
+                    f"Сначала выполните: python manage.py create_content_manager_group"
+                )
+            )
+            return
+
+        if not CustomUser.objects.filter(email=email).exists() and not password:
+            self.stderr.write(
+                self.style.ERROR(f"Пользователь {email} не найден. Укажите --password, чтобы создать его.")
+            )
+            return
+
+        user, created = CustomUser.objects.get_or_create(email=email)
+        if password:
+            user.set_password(password)
+            user.is_active = True
+        # Права модели работают и на сайте, но вход в админку требует is_staff,
+        # поэтому выдаём его вместе с ролью.
+        user.is_staff = True
+        user.save()
+
+        user.groups.add(group)
+
+        if created:
+            self.stdout.write(self.style.SUCCESS(f"Пользователь {email} создан и добавлен в группу"))
+        else:
+            self.stdout.write(
+                self.style.WARNING(f"Пользователь {email} уже существовал — обновлён и добавлен в группу")
+            )
