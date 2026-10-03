@@ -4,9 +4,10 @@ from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.core.cache import cache
 from django.db.models import Count, Q, QuerySet
 from django.forms import BaseModelForm
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.functional import Promise
@@ -70,22 +71,46 @@ class ProductDetailView(DetailView):
     """
 
     model = Product
+    CACHE_TIMEOUT = 60 * 15  # 15 минут
 
-    def get_queryset(self) -> QuerySet[Product]:
+    def get_object(self, queryset=None) -> Product:
         """
-        Возвращает набор товаров, доступных текущему пользователю.
+        Возвращает товар, доступный текущему пользователю.
 
-        Returns:
-            QuerySet[Product]: Опубликованные товары и собственные неопубликованные,
-            либо все товары для модератора.
+        Сначала проверяются права (дешёвый EXISTS-запрос),
+        затем товар берётся из кеша или из БД.
+
+        Raises:
+            Http404: Если товар не существует или недоступен пользователю.
         """
-        queryset = super().get_queryset()
-        if not self.request.user.has_perm(UNPUBLISH_PERMISSION):
-            if self.request.user.is_authenticated:
-                queryset = queryset.filter(Q(is_published=True) | Q(owner=self.request.user))
-            else:
-                queryset = queryset.filter(is_published=True)
-        return queryset
+        pk = self.kwargs["pk"]
+
+        if not self._user_can_view(pk):
+            raise Http404
+
+        cache_key = f"product:{pk}"
+        product = cache.get(cache_key)
+
+        if product is not None and product.pk is None:
+            cache.delete(cache_key)
+            product = None
+
+        if product is None:
+            try:
+                product = Product.objects.get(pk=pk)
+            except Product.DoesNotExist:
+                raise Http404(f"Товар с pk={pk} не найден") from None
+            cache.set(cache_key, product, timeout=self.CACHE_TIMEOUT)
+        return product
+
+    def _user_can_view(self, pk: int) -> bool:
+        """Проверяет, может ли текущий пользователь видеть товар с указанным pk."""
+        user = self.request.user
+        if user.has_perm(UNPUBLISH_PERMISSION):
+            return Product.objects.filter(pk=pk).exists()
+        if user.is_authenticated:
+            return Product.objects.filter(Q(pk=pk) & (Q(is_published=True) | Q(owner=user))).exists()
+        return Product.objects.filter(pk=pk, is_published=True).exists()
 
 
 class ContactsView(View):
