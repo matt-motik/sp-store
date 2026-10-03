@@ -54,7 +54,7 @@ def get_category_products(category_id: int) -> list[Product]:
         отсортированный по created_at (по убыванию).
     """
     cache_key = f"category_{category_id}"
-    products = cache.get(cache_key)
+    products: list[Product] | None = cache.get(cache_key)
 
     if products is None:
         products = list(Product.objects.filter(category_id=category_id, is_published=True).order_by("-created_at"))

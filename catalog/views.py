@@ -68,7 +68,7 @@ class ProductDetailView(DetailView):
     model = Product
     CACHE_TIMEOUT = 60 * 15  # 15 минут
 
-    def get_object(self, queryset=None) -> Product:
+    def get_object(self, queryset: QuerySet[Product] | None = None) -> Product:
         """
         Возвращает товар, доступный текущему пользователю.
 
@@ -84,7 +84,7 @@ class ProductDetailView(DetailView):
             raise Http404
 
         cache_key = f"product_{pk}"
-        product = cache.get(cache_key)
+        product: Product | None = cache.get(cache_key)
 
         if product is not None and product.pk is None:
             cache.delete(cache_key)
@@ -102,10 +102,10 @@ class ProductDetailView(DetailView):
         """Проверяет, может ли текущий пользователь видеть товар с указанным pk."""
         user = self.request.user
         if user.has_perm(UNPUBLISH_PERMISSION):
-            return Product.objects.filter(pk=pk).exists()
+            return bool(Product.objects.filter(pk=pk).exists())
         if user.is_authenticated:
-            return Product.objects.filter(Q(pk=pk) & (Q(is_published=True) | Q(owner=user))).exists()
-        return Product.objects.filter(pk=pk, is_published=True).exists()
+            return bool(Product.objects.filter(Q(pk=pk) & (Q(is_published=True) | Q(owner=user))).exists())
+        return bool(Product.objects.filter(pk=pk, is_published=True).exists())
 
 
 class ContactsView(View):
@@ -488,6 +488,6 @@ class CategoryDetailView(ListView):
         Returns:
             dict[str, Any]: Контекст с объектом category.
         """
-        context = super().get_context_data(**kwargs)
+        context: dict[str, Any] = super().get_context_data(**kwargs)
         context["category"] = self.category
         return context
