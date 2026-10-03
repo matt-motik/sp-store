@@ -23,6 +23,9 @@ env = environ.Env(
     DB_NAME=(str, None),
     DB_HOST=(str, None),
     DB_PORT=(str, None),
+    USE_CACHES=(bool, False),
+    REDIS_BACKEND=(str, "django_redis.cache.RedisCache"),
+    REDIS_LOCATION=(str, "redis://127.0.0.1:6379/1"),
 )
 environ.Env.read_env(Path(__file__).resolve().parent.parent / ".env")
 
@@ -87,7 +90,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": env("DB_NAME"),
         "USER": env("DB_USER"),
         "PASSWORD": env("DB_PASSWORD"),
@@ -161,7 +164,7 @@ MAILERS = {
     },
 }
 
-DEFAULT_FROM_EMAIL = env("EMAIL_HOST_USER")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default=env("EMAIL_HOST_USER"))
 
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
@@ -172,3 +175,12 @@ LOGIN_REDIRECT_URL = "catalog:product_list"
 LOGOUT_REDIRECT_URL = "users:login"
 
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 24 часа
+
+USE_CACHES = env("USE_CACHES")
+if USE_CACHES:
+    CACHES = {
+        "default": {
+            "BACKEND": env("REDIS_BACKEND"),
+            "LOCATION": env("REDIS_LOCATION"),
+        }
+    }
