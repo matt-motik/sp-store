@@ -20,6 +20,8 @@
 - **Удаление категорий** с подтверждением
 - **Список категорий** с количеством товаров в каждой
 - **Фильтрация товаров по категории**
+- **Кеширование товара в Redis** (низкоуровневое, TTL 15 минут)
+- **Кеширование списка товаров категории в Redis** (низкоуровневое, TTL 15 минут)
 - **Страница контактов** с формой обратной связи
 - **Загрузка изображений** с валидацией (размер до 0.5MB, форматы JPG/PNG/WEBP)
 - **Адаптивная вёрстка** с Bootstrap 5
@@ -67,6 +69,7 @@
 | **Фреймворк**   | Django 6.1 |
 | **База данных** | PostgreSQL |
 | **ORM**         | Django ORM |
+| **Кеширование** | Redis |
 | **Вёрстка**     | Bootstrap 5 |
 | **Иконки**      | Bootstrap Icons |
 | **Управление зависимостями** | uv |
@@ -83,6 +86,24 @@
 git clone https://github.com/matt-motik/sp-store.git
 cd sp-store
 uv sync --with dev,lint
+```
+
+### Redis
+
+Установите и запустите Redis (для кеширования):
+
+```bash
+# Manjaro / Arch
+sudo pacman -S redis
+sudo systemctl enable --now redis
+
+# Проверка
+redis-cli ping  # PONG
+```
+
+Затем:
+
+```bash
 uv run python manage.py migrate
 uv run python manage.py runserver
 ```
@@ -97,19 +118,21 @@ uv run python manage.py runserver
 ```bash
 cp .env.example .env
 ```
-| Переменная             | Описание                  | По умолчанию        |
-|------------------------|---------------------------|---------------------|
-| **SECRET_KEY**         | Секретный ключ Django     | -                   |
-| **DEBUG**              | Режим отладки             | True                |
-| **ALLOWED_HOSTS**      | Разрешённые хосты         | localhost,127.0.0.1 |
-| **DB_NAME**            | Имя базы данных PostgreSQL| -                   |
-| **DB_USER**            | Пользователь PostgreSQL   | -                   |
-| **DB_PASSWORD**        | Пароль PostgreSQL         | -                   |
-| **DB_HOST**            | Хост PostgreSQL           | -                   |
-| **DB_PORT**            | Порт PostgreSQL           | 5432                |
-| **EMAIL_HOST_USER**    | Логин для email           | -                   |
-| **EMAIL_HOST_PASSWORD**| Пароль приложения         | -                   |
-| **DEFAULT_FROM_EMAIL** | Email отправителя         | -                   |
+| Переменная             | Описание                  | По умолчанию             |
+|------------------------|---------------------------|--------------------------|
+| **SECRET_KEY**         | Секретный ключ Django     | -                        |
+| **DEBUG**              | Режим отладки             | True                     |
+| **ALLOWED_HOSTS**      | Разрешённые хосты         | localhost,127.0.0.1      |
+| **DB_NAME**            | Имя базы данных PostgreSQL| -                        |
+| **DB_USER**            | Пользователь PostgreSQL   | -                        |
+| **DB_PASSWORD**        | Пароль PostgreSQL         | -                        |
+| **DB_HOST**            | Хост PostgreSQL           | -                        |
+| **DB_PORT**            | Порт PostgreSQL           | 5432                     |
+| **EMAIL_HOST_USER**    | Логин для email           | -                        |
+| **EMAIL_HOST_PASSWORD**| Пароль приложения         | -                        |
+| **DEFAULT_FROM_EMAIL** | Email отправителя         | -                        |
+| **USE_CACHES**         | Включить кеширование      | False                    |
+| **REDIS_LOCATION**     | Адрес Redis               | redis://127.0.0.1:6379/1 |
 
 <div id="использование"></div>
 
@@ -125,31 +148,32 @@ http://127.0.0.1:8000/
 
 ### 🌐 URL-маршруты
 
-| URL | Описание |
-|-----|----------|
-| `/` | Главная страница (каталог) |
-| `/products/<id>/` | Детали товара |
-| `/products/add/` | Добавление товара |
-| `/products/<id>/edit/` | Редактирование товара |
-| `/products/<id>/delete/` | Удаление товара |
-| `/categories/` | Список категорий |
-| `/category/add/` | Добавление категории |
-| `/category/<id>/edit/` | Редактирование категории |
-| `/category/<id>/delete/` | Удаление категории |
-| `/contacts/` | Контакты |
-| `/blogs/` | Список записей блога |
-| `/blogs/mine/` | Мои записи |
-| `/blogs/create/` | Создание записи |
-| `/blogs/<id>/` | Детали записи |
-| `/blogs/<id>/edit/` | Редактирование записи |
-| `/blogs/<id>/delete/` | Удаление записи |
-| `/users/register/` | Регистрация |
-| `/users/login/` | Вход |
-| `/users/logout/` | Выход |
-| `/users/activate/<uidb64>/<token>/` | Активация аккаунта по email |
-| `/users/profile/` | Просмотр профиля |
-| `/users/profile/edit/` | Редактирование профиля |
-| `/users/password/change/` | Смена пароля |
+| URL                                 | Описание                                      |
+|-------------------------------------|-----------------------------------------------|
+| `/`                                 | Главная страница (каталог)                    |
+| `/products/<id>/`                   | Детали товара                                 |
+| `/products/add/`                    | Добавление товара                             |
+| `/products/<id>/edit/`              | Редактирование товара                         |
+| `/products/<id>/delete/`            | Удаление товара                               |
+| `/categories/`                      | Список категорий                              |
+| `/categories/<id>/`                 | Товары одной категории (кешируется в Redis)   |
+| `/categories/add/`                  | Добавление категории                          |
+| `/categories/<id>/edit/`            | Редактирование категории                      |
+| `/categories/<id>/delete/`          | Удаление категории                            |
+| `/contacts/`                        | Контакты                                      |
+| `/blogs/`                           | Список записей блога                          |
+| `/blogs/mine/`                      | Мои записи                                    |
+| `/blogs/create/`                    | Создание записи                               |
+| `/blogs/<id>/`                      | Детали записи                                 |
+| `/blogs/<id>/edit/`                 | Редактирование записи                         |
+| `/blogs/<id>/delete/`               | Удаление записи                               |
+| `/users/register/`                  | Регистрация                                   |
+| `/users/login/`                     | Вход                                          |
+| `/users/logout/`                    | Выход                                         |
+| `/users/activate/<uidb64>/<token>/` | Активация аккаунта по email                   |
+| `/users/profile/`                   | Просмотр профиля                              |
+| `/users/profile/edit/`              | Редактирование профиля                        |
+| `/users/password/change/`           | Смена пароля                                  |
 
 ## 📦 Управление данными
 
@@ -687,6 +711,13 @@ uv run pre-commit run --all-files
 - [x] Снятие товара с публикации через кастомное право `can_unpublish_product`
 - [x] Ограничение CRUD категорий на модератора продуктов и суперпользователя
 - [x] Выдача `is_staff` ролевым пользователям, фикстуры пользователей и записей блога
+- [x] Установка и настройка Redis как бэкенда кеширования
+- [x] Низкоуровневое кеширование товара (`product_{id}`, TTL 15 минут)
+- [x] Низкоуровневое кеширование списка товаров категории (`category_{id}`, TTL 15 минут)
+- [x] Сервисная функция `get_available_products`
+- [x] Сервисная функция `get_category_products` с низкоуровневым кешированием
+- [x] Отдельное представление `CategoryDetailView` и шаблон `category_detail.html`
+- [x] Инвалидация кеша товара и связанных категорий через сигналы (включая смену категории)
 
 ## Команда проекта
 
