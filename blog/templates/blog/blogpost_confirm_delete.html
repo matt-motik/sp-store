@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Удаление записи{% endblock %}
+{% block header %}Удаление записи{% endblock %}
+{% block description %}Подтверждение удаления записи из блога{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Подтверждение удаления
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="lead">Вы действительно хотите удалить запись?</p>
+                
+                <div class="alert alert-warning">
+                    <h6 class="alert-heading">Запись будет удалена безвозвратно:</h6>
+                    <p class="mb-1"><strong>Заголовок:</strong> {{ blogpost.title }}</p>
+                    <p class="mb-1"><strong>Дата создания:</strong> {{ blogpost.created_at|date:"d.m.Y H:i" }}</p>
+                    <p class="mb-0"><strong>Просмотров:</strong> {{ blogpost.views_count }}</p>
+                </div>
+                
+                {% if blogpost.preview %}
+                <div class="text-center mb-3">
+                    <div class="bg-light d-inline-block p-2 rounded" style="max-width: 200px;">
+                        <img src="{{ blogpost.preview.url }}" alt="{{ blogpost.title }}" 
+                             class="img-fluid rounded" style="max-height: 150px; object-fit: cover;">
+                    </div>
+                </div>
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'blog:detail' blogpost.pk %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Отмена
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-2"></i>Удалить запись
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

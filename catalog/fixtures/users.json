@@ -1,0 +1,114 @@
+[
+  {
+    "model": "users.customuser",
+    "pk": 22,
+    "fields": {
+      "password": "pbkdf2_sha256$1500000$6csmzbkIfCxOAXxoGg7FYX$cWrcfPDhoio5UBYW6HrAnj+cWp7k6XlDODzVVbp5rBA=",
+      "last_login": null,
+      "is_superuser": true,
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-09-27T17:47:32.470Z",
+      "email": "admin@example.com",
+      "first_name": "Админ",
+      "last_name": "Системный",
+      "avatar": "",
+      "phone_number": "",
+      "country": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.customuser",
+    "pk": 24,
+    "fields": {
+      "password": "pbkdf2_sha256$1500000$LAxW84Wbfu0m7wq9rK5FaR$CBAYc8gDQ3HeEYR+rVVkjFZGmQfFmoai8jK2MWWUBgY=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-09-27T17:47:32.905Z",
+      "email": "author@example.com",
+      "first_name": "Автор",
+      "last_name": "Товаров",
+      "avatar": "",
+      "phone_number": "",
+      "country": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.customuser",
+    "pk": 25,
+    "fields": {
+      "password": "pbkdf2_sha256$1500000$OY7oEKkAGJdj6p9V1gntZh$f/DkCyMNKqBMeJjeAXkWrKDQrF6Vl9DERd0OManQs3E=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-09-27T19:43:56.441Z",
+      "email": "content@example.com",
+      "first_name": "Контент",
+      "last_name": "Менеджер",
+      "avatar": "",
+      "phone_number": "",
+      "country": "",
+      "groups": [
+        [
+          "Контент-менеджер"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.customuser",
+    "pk": 26,
+    "fields": {
+      "password": "pbkdf2_sha256$1500000$xuuoYmLOQf3rYyfpUKjik7$kGCIeDLl68RWeENP+dKcYzmU7e9a7oXeuv1iSvVNEGM=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-09-27T19:43:56.668Z",
+      "email": "editor@example.com",
+      "first_name": "Редактор",
+      "last_name": "Блога",
+      "avatar": "",
+      "phone_number": "",
+      "country": "",
+      "groups": [
+        [
+          "Контент-менеджер"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.customuser",
+    "pk": 23,
+    "fields": {
+      "password": "pbkdf2_sha256$1500000$h7tAzltWmTE1m4fwHS0mlo$ZgE20La1TuEu6Hluqz+tvs/sfbbm3pIkBBz6Gd8gkwk=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-09-27T17:47:32.692Z",
+      "email": "moderator@example.com",
+      "first_name": "Модератор",
+      "last_name": "Товаров",
+      "avatar": "",
+      "phone_number": "",
+      "country": "",
+      "groups": [
+        [
+          "Модератор продуктов"
+        ]
+      ],
+      "user_permissions": []
+    }
+  }
+]

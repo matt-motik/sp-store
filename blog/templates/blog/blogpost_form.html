@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавить запись в блог{% endblock %}
+{% block header %}Добавление записи в блог{% endblock %}
+{% block description %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                {% if messages %}
+                {% for message in messages %}
+
+                {% if message.extra_tags == 'blog'%}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show"
+                     role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    {{ form.as_p }}
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-save"></i> Сохранить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

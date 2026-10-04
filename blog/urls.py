@@ -1,0 +1,23 @@
+"""URL-маршрутизация приложения blog."""
+
+from django.urls import path
+
+from .views import (
+    BlogPostCreateView,
+    BlogPostDeleteView,
+    BlogPostDetailView,
+    BlogPostListView,
+    BlogPostMyListView,
+    BlogPostUpdateView,
+)
+
+app_name = "blog"
+
+urlpatterns = [
+    path("", BlogPostListView.as_view(), name="list"),
+    path("mine/", BlogPostMyListView.as_view(), name="mine"),
+    path("create/", BlogPostCreateView.as_view(), name="create"),
+    path("<int:pk>/", BlogPostDetailView.as_view(), name="detail"),
+    path("<int:pk>/edit/", BlogPostUpdateView.as_view(), name="edit"),
+    path("<int:pk>/delete/", BlogPostDeleteView.as_view(), name="delete"),
+]
